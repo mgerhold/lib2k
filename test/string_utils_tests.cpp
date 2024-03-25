@@ -419,3 +419,12 @@ TEST(StringUtilsTests, Join) {
     char const* nullStrings[] = { nullptr, nullptr };
     EXPECT_THROW({ std::ignore = join(nullStrings, ", "); }, std::invalid_argument);
 }
+
+TEST(StringUtilsTests, VariadicJoin) {
+    using c2k::join;
+    EXPECT_EQ(join(", ", "this", "is", "a", "test"), "this, is, a, test");
+    EXPECT_EQ(join("ab", "ab"), "ab");
+    EXPECT_EQ(join("", ""), "");
+    EXPECT_EQ(join("", "a"), "a");
+    EXPECT_EQ(join("", "a", "b", "c"), "abc");
+}
