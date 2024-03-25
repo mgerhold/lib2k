@@ -28,7 +28,15 @@ add_executable(file_utils_tests
 target_link_libraries(file_utils_tests PRIVATE lib2k lib2k_options)
 target_link_system_libraries(file_utils_tests PRIVATE GTest::gtest GTest::gtest_main)
 
+add_executable(synchronized_tests
+        synchronized_tests.cpp
+)
+
+target_link_libraries(synchronized_tests PRIVATE lib2k lib2k_options)
+target_link_system_libraries(synchronized_tests PRIVATE GTest::gtest GTest::gtest_main)
+
 gtest_discover_tests(types_tests)
 gtest_discover_tests(string_utils_tests)
 gtest_discover_tests(random_tests)
 gtest_discover_tests(file_utils_tests)
+gtest_discover_tests(synchronized_tests)
