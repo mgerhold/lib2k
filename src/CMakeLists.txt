@@ -8,6 +8,7 @@ add_library(lib2k
         include/lib2k/file_utils.hpp
         file_utils.cpp
         include/lib2k/synchronized.hpp
+        include/lib2k/unreachable.hpp
 )
 
 target_include_directories(lib2k PUBLIC include)
