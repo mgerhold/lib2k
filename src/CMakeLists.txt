@@ -5,6 +5,9 @@ add_library(lib2k
         include/lib2k/random.hpp
         random.cpp
         include/lib2k/concepts.hpp
+        include/lib2k/file_utils.hpp
+        file_utils.cpp
 )
 
 target_include_directories(lib2k PUBLIC include)
+target_link_system_libraries(lib2k PUBLIC tl::expected)
