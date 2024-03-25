@@ -138,15 +138,18 @@ namespace c2k {
 
     // clang-format off
     [[nodiscard]] std::string join(
-        std::string_view const separator,
+        [[maybe_unused]] std::string_view const separator,
         std::convertible_to<std::string> auto&& first,
         std::convertible_to<std::string> auto&&... rest
     ) { // clang-format on
         auto result = std::string{ std::forward<decltype(first)>(first) };
-        ([&]() {
-            result += separator;
-            result += std::string{ std::forward<decltype(rest)>(rest) };
-        }(), ...);
+        (
+                [&] {
+                    result += separator;
+                    result += std::string{ std::forward<decltype(rest)>(rest) };
+                }(),
+                ...
+        );
         return result;
     }
 } // namespace c2k
