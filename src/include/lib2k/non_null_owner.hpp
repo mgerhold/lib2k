@@ -7,6 +7,20 @@
 #include <utility>
 
 namespace c2k {
+
+    template<std::default_initializable T>
+    class NonNullOwner;
+
+    namespace detail {
+        struct Clang16Satisfier final {
+            /* This weird wrapper struct is only needed because clang-16 doesn't understand
+             * the friend declaration of the variadic template. clang-17 seems to accept it.
+             * But to lower the requirements, we use this. */
+            template<std::default_initializable T, typename... Args>
+            [[nodiscard]] static NonNullOwner<T> make_non_null_owner(Args&&... args);
+        };
+    } // namespace detail
+
     /**
      * @brief A class that holds a non-null ownership of an object allocated on the free store.
      *
@@ -20,8 +34,7 @@ namespace c2k {
      */
     template<std::default_initializable T>
     class NonNullOwner final {
-        template<std::default_initializable U, typename... Args>
-        friend NonNullOwner<U> make_non_null_owner(Args&&... args);
+        friend struct detail::Clang16Satisfier;
 
     private:
         std::unique_ptr<T> m_owned;
@@ -61,6 +74,12 @@ namespace c2k {
         }
     };
 
+    template<std::default_initializable T, typename... Args>
+    NonNullOwner<T> detail::Clang16Satisfier::make_non_null_owner(Args&&... args) {
+        static_assert(sizeof...(args) > 0);
+        return NonNullOwner{ std::make_unique<T>(std::forward<Args>(args)...) };
+    }
+
     /**
      * @brief Creates a `NonNullOwner` object.
      *
@@ -76,7 +95,6 @@ namespace c2k {
      */
     template<std::default_initializable T, typename... Args>
     [[nodiscard]] NonNullOwner<T> make_non_null_owner(Args&&... args) {
-        static_assert(sizeof...(args) > 0);
-        return NonNullOwner{ std::make_unique<T>(std::forward<Args>(args)...) };
+        return detail::Clang16Satisfier::make_non_null_owner<T>(std::forward<Args>(args)...);
     }
 } // namespace c2k
