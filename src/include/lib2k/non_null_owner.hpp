@@ -20,7 +20,7 @@ namespace c2k {
      */
     template<std::default_initializable T>
     class NonNullOwner final {
-        template<typename U, typename... Args>
+        template<std::default_initializable U, typename... Args>
         friend NonNullOwner<U> make_non_null_owner(Args&&... args);
 
     private:
@@ -74,7 +74,7 @@ namespace c2k {
      *
      * @see NonNullOwner
      */
-    template<typename T, typename... Args>
+    template<std::default_initializable T, typename... Args>
     [[nodiscard]] NonNullOwner<T> make_non_null_owner(Args&&... args) {
         static_assert(sizeof...(args) > 0);
         return NonNullOwner{ std::make_unique<T>(std::forward<Args>(args)...) };
