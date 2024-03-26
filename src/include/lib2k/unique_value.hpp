@@ -14,9 +14,10 @@ namespace c2k {
      * Additionally, the user can provide a callable object (deleter) to be called
      * when the value needs to be deleted.
      * This is similar to `std::unique_ptr<T>`, except that it doesn't manage the
-     * object via a pointer.
+     * object via a pointer. Use-cases for this can be non-pointer resource handles,
+     * for example file descriptors (files, sockets, ...) or GPU buffers.
      */
-    template<typename T, typename Deleter = std::function<void(T)>>
+    template<typename T, std::invocable<T> Deleter = decltype([](T const&) {})>
     class UniqueValue final {
     private:
         std::optional<T> m_value;
