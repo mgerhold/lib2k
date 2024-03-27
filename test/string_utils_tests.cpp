@@ -448,3 +448,47 @@ TEST(StringUtilsTests, Repeated) {
     EXPECT_NO_THROW(std::ignore = repeated("abc", static_cast<std::size_t>(1e6)));
     EXPECT_EQ(repeated("你好", 3), "你好你好你好");
 }
+
+TEST(StringUtilsTests, Replace) {
+    using c2k::replace, c2k::StartPosition, c2k::MaxReplacementCount;
+
+    EXPECT_EQ(replace("abc", "abc", "abc"), "abc");
+    EXPECT_EQ(replace("abc", "b", "abc"), "aabcc");
+    EXPECT_EQ(replace("abc", "d", ""), "abc");
+    EXPECT_EQ(replace("", "", ""), "");
+    EXPECT_EQ(replace("", "", "test"), "test");
+    EXPECT_EQ(replace("ǺBC", "Ǻ", "A"), "ABC");
+    EXPECT_EQ(replace("Hello, 🌍!", "🌍", "World"), "Hello, World!");
+    EXPECT_EQ(replace("abababab", "aba", "<>"), "<>b<>b");
+    EXPECT_EQ(replace("abcabc", "a", "ab"), "abbcabbc");
+    EXPECT_EQ(replace("abc", "b", "bcd"), "abcdc");
+    EXPECT_EQ(replace("aaaa", "a", "aa"), "aaaaaaaa");
+    EXPECT_EQ(replace("312312312312", "23", "!"), "31!1!1!12");
+    EXPECT_EQ(replace("312312312312", "23", "!!"), "31!!1!!1!!12");
+    EXPECT_EQ(replace("312312312312", "23", "test"), "31test1test1test12");
+    EXPECT_EQ(replace("testtesttest", "test", "a"), "aaa");
+    EXPECT_EQ(replace("Hello, Bjarne!", "Bjarne", "Herb"), "Hello, Herb!");
+    EXPECT_EQ(replace("1, 2, 3", ", ", "\n"), "1\n2\n3");
+    EXPECT_EQ(replace("to", "too long", "something"), "to");
+    EXPECT_EQ(replace("abc", "", "test"), "testatestbtestctest");
+    EXPECT_EQ(replace("Bjarne is cool, Scott is cool", " is cool", ""), "Bjarne, Scott");
+
+    // with start position
+    EXPECT_EQ(replace("aaaa", "a", "!", StartPosition{ 2 }), "aa!!");
+    EXPECT_EQ(replace("NaNaNaNaNa", "Na", "Batman!", StartPosition{ 8 }), "NaNaNaNaBatman!");
+    EXPECT_EQ(replace("abc", "abc", "abc", StartPosition{ 0 }), "abc");
+    EXPECT_EQ(replace("Bjarne is cool, Scott is cool", " is cool", "", StartPosition{ 0 }), "Bjarne, Scott");
+    EXPECT_EQ(replace("aaaa", "a", "!", StartPosition{ 4 }), "aaaa");
+    EXPECT_EQ(replace("aaaa", "a", "!", StartPosition{ std::numeric_limits<std::size_t>::max() }), "aaaa");
+
+    // with max replacement count
+    EXPECT_EQ(replace("aaaa", "a", "!", MaxReplacementCount{ 2 }), "!!aa");
+    EXPECT_EQ(replace("aaaa", "a", "!", MaxReplacementCount{ 0 }), "aaaa");
+    EXPECT_EQ(replace("aaaa", "a", "!", MaxReplacementCount{ 1 }), "!aaa");
+    EXPECT_EQ(replace("aaaa", "a", "!", MaxReplacementCount{ 4 }), "!!!!");
+    EXPECT_EQ(replace("aaaa", "a", "!", MaxReplacementCount{ 5 }), "!!!!");
+
+    // with start position and max replacement count
+    EXPECT_EQ(replace("aaaaaaa", "aa", "!", StartPosition{ 1 }, MaxReplacementCount{ 2 }), "a!!aa");
+    EXPECT_EQ(replace("1, 2, 3, 4, 5", ", ", "\n", StartPosition{ 2 }, MaxReplacementCount{ 2 }), "1, 2\n3\n4, 5");
+}

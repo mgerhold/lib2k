@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <limits>
+#include <utility>
 
 namespace c2k {
     template<typename T, typename Result, typename... Args>
@@ -160,5 +162,58 @@ namespace c2k {
             result += to_repeat;
         }
         return result;
+    }
+
+    enum class StartPosition : std::string::size_type {};
+    enum class MaxReplacementCount : std::string::size_type {};
+
+    // clang-format off
+    [[nodiscard]] std::string replace(
+        std::string original,
+        std::string_view to_replace,
+        std::string_view replacement,
+        StartPosition start_pos,
+        MaxReplacementCount max_num_replacements
+    ); // clang-format on
+
+    // clang-format off
+    [[nodiscard]] inline std::string replace(
+        std::string original,
+        std::string_view const to_replace,
+        std::string_view const replacement
+    ) { // clang-format on
+        return replace(
+                std::move(original),
+                to_replace,
+                replacement,
+                StartPosition{ 0 },
+                MaxReplacementCount{ std::numeric_limits<std::underlying_type_t<MaxReplacementCount>>::max() }
+        );
+    }
+
+    // clang-format off
+    [[nodiscard]] inline std::string replace(
+        std::string original,
+        std::string_view const to_replace,
+        std::string_view const replacement,
+        StartPosition const start_pos
+    ) { // clang-format on
+        return replace(
+                std::move(original),
+                to_replace,
+                replacement,
+                start_pos,
+                MaxReplacementCount{ std::numeric_limits<std::underlying_type_t<MaxReplacementCount>>::max() }
+        );
+    }
+
+    // clang-format off
+    [[nodiscard]] inline std::string replace(
+        std::string original,
+        std::string_view const to_replace,
+        std::string_view const replacement,
+        MaxReplacementCount const max_num_replacements
+    ) { // clang-format on
+        return replace(std::move(original), to_replace, replacement, StartPosition{ 0 }, max_num_replacements);
     }
 } // namespace c2k
