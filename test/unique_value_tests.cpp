@@ -21,11 +21,10 @@ static void destroy(int const handle) {
     if (handle == 0) {
         return;
     }
-    if (not created_handles.contains(handle)) {
-        //if (num_removed == 0) {
+    auto const num_removed = created_handles.erase(handle);
+    if (num_removed == 0) {
         throw std::logic_error{ "trying to destroy non-existing handle" };
     }
-    auto const num_removed = created_handles.erase(handle);
     assert(num_removed == 1);
 }
 
