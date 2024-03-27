@@ -1,8 +1,8 @@
 #include <concepts>
 #include <gtest/gtest.h>
 #include <lib2k/unique_value.hpp>
-#include <unordered_set>
 #include <memory>
+#include <unordered_set>
 
 using c2k::UniqueValue;
 
@@ -11,7 +11,7 @@ static inline auto next_destroy_handle = 1;
 
 [[nodiscard]] static int create() {
     auto const handle = next_destroy_handle++;
-    auto const [_, inserted] = created_handles.insert(handle);
+    [[maybe_unused]] auto const [_, inserted] = created_handles.insert(handle);
     assert(inserted);
     return handle;
 }
