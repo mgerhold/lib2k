@@ -428,3 +428,23 @@ TEST(StringUtilsTests, VariadicJoin) {
     EXPECT_EQ(join("", "a"), "a");
     EXPECT_EQ(join("", "a", "b", "c"), "abc");
 }
+
+TEST(StringUtilsTests, Repeated) {
+    using c2k::repeated;
+    using namespace std::string_literals;
+    using namespace std::string_view_literals;
+
+    EXPECT_EQ(repeated("abc", 3), "abcabcabc");
+    EXPECT_EQ(repeated("abc", 0), "");
+    EXPECT_EQ(repeated("", 10), "");
+    EXPECT_EQ(repeated("*", 5), "*****");
+
+    static constexpr auto a = "test";
+    auto const b = "test"s;
+    static constexpr auto c = "test"sv;
+    EXPECT_EQ(repeated(a, 3), "testtesttest");
+    EXPECT_EQ(repeated(b, 3), "testtesttest");
+    EXPECT_EQ(repeated(c, 3), "testtesttest");
+    EXPECT_NO_THROW(std::ignore = repeated("abc", static_cast<std::size_t>(1e6)));
+    EXPECT_EQ(repeated("你好", 3), "你好你好你好");
+}

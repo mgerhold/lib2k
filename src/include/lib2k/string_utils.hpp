@@ -152,4 +152,13 @@ namespace c2k {
         );
         return result;
     }
+
+    [[nodiscard]] inline std::string repeated(std::string_view const to_repeat, std::size_t const count) {
+        auto result = std::string{};
+        result.reserve(count * to_repeat.length());
+        for (auto i = decltype(count){ 0 }; i < count; ++i) {
+            result += to_repeat;
+        }
+        return result;
+    }
 } // namespace c2k
