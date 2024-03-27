@@ -3,8 +3,10 @@
 #include <algorithm>
 #include <cctype>
 #include <concepts>
+#include <limits>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace c2k {
@@ -151,5 +153,101 @@ namespace c2k {
                 ...
         );
         return result;
+    }
+
+    [[nodiscard]] inline std::string repeated(std::string_view const to_repeat, std::size_t const count) {
+        auto result = std::string{};
+        result.reserve(count * to_repeat.length());
+        for (auto i = decltype(count){ 0 }; i < count; ++i) {
+            result += to_repeat;
+        }
+        return result;
+    }
+
+    enum class StartPosition : std::string::size_type {};
+    enum class MaxReplacementCount : std::string::size_type {};
+
+    // clang-format off
+    [[nodiscard]] std::string replace(
+        std::string original,
+        std::string_view to_replace,
+        std::string_view replacement,
+        StartPosition start_pos,
+        MaxReplacementCount max_num_replacements
+    ); // clang-format on
+
+    // clang-format off
+    [[nodiscard]] inline std::string replace(
+        std::string original,
+        std::string_view const to_replace,
+        std::string_view const replacement
+    ) { // clang-format on
+        return replace(
+                std::move(original),
+                to_replace,
+                replacement,
+                StartPosition{ 0 },
+                MaxReplacementCount{ std::numeric_limits<std::underlying_type_t<MaxReplacementCount>>::max() }
+        );
+    }
+
+    // clang-format off
+    [[nodiscard]] inline std::string replace(
+        std::string original,
+        std::string_view const to_replace,
+        std::string_view const replacement,
+        StartPosition const start_pos
+    ) { // clang-format on
+        return replace(
+                std::move(original),
+                to_replace,
+                replacement,
+                start_pos,
+                MaxReplacementCount{ std::numeric_limits<std::underlying_type_t<MaxReplacementCount>>::max() }
+        );
+    }
+
+    // clang-format off
+    [[nodiscard]] inline std::string replace(
+        std::string original,
+        std::string_view const to_replace,
+        std::string_view const replacement,
+        MaxReplacementCount const max_num_replacements
+    ) { // clang-format on
+        return replace(std::move(original), to_replace, replacement, StartPosition{ 0 }, max_num_replacements);
+    }
+
+    inline void left_pad(std::string& string, std::size_t const target_length, char const padding_char = ' ') {
+        if (target_length <= string.length()) {
+            return;
+        }
+        string.insert(0, target_length - string.length(), padding_char);
+    }
+
+    inline void right_pad(std::string& string, std::size_t const target_length, char const padding_char = ' ') {
+        if (target_length <= string.length()) {
+            return;
+        }
+        string.insert(string.length(), target_length - string.length(), padding_char);
+    }
+
+    // clang-format off
+    [[nodiscard]] inline std::string left_padded(
+        std::string&& string,
+        std::size_t const target_length,
+        char const padding_char = ' '
+    ) { // clang-format on
+        left_pad(string, target_length, padding_char);
+        return string;
+    }
+
+    // clang-format off
+    [[nodiscard]] inline std::string right_padded(
+        std::string&& string,
+        std::size_t const target_length,
+        char const padding_char = ' '
+    ) { // clang-format on
+        right_pad(string, target_length, padding_char);
+        return string;
     }
 } // namespace c2k
