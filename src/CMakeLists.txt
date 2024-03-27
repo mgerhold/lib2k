@@ -7,6 +7,7 @@ add_library(lib2k
         include/lib2k/concepts.hpp
         include/lib2k/file_utils.hpp
         file_utils.cpp
+        include/lib2k/unique_value.hpp
         include/lib2k/non_null_owner.hpp
         include/lib2k/synchronized.hpp
         include/lib2k/unreachable.hpp
