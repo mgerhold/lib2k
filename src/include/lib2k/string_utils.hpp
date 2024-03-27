@@ -3,11 +3,11 @@
 #include <algorithm>
 #include <cctype>
 #include <concepts>
+#include <limits>
 #include <stdexcept>
 #include <string>
-#include <vector>
-#include <limits>
 #include <utility>
+#include <vector>
 
 namespace c2k {
     template<typename T, typename Result, typename... Args>
@@ -215,5 +215,39 @@ namespace c2k {
         MaxReplacementCount const max_num_replacements
     ) { // clang-format on
         return replace(std::move(original), to_replace, replacement, StartPosition{ 0 }, max_num_replacements);
+    }
+
+    inline void left_pad(std::string& string, std::size_t const target_length, char const padding_char = ' ') {
+        if (target_length <= string.length()) {
+            return;
+        }
+        string.insert(0, target_length - string.length(), padding_char);
+    }
+
+    inline void right_pad(std::string& string, std::size_t const target_length, char const padding_char = ' ') {
+        if (target_length <= string.length()) {
+            return;
+        }
+        string.insert(string.length(), target_length - string.length(), padding_char);
+    }
+
+    // clang-format off
+    [[nodiscard]] inline std::string left_padded(
+        std::string&& string,
+        std::size_t const target_length,
+        char const padding_char = ' '
+    ) { // clang-format on
+        left_pad(string, target_length, padding_char);
+        return string;
+    }
+
+    // clang-format off
+    [[nodiscard]] inline std::string right_padded(
+        std::string&& string,
+        std::size_t const target_length,
+        char const padding_char = ' '
+    ) { // clang-format on
+        right_pad(string, target_length, padding_char);
+        return string;
     }
 } // namespace c2k

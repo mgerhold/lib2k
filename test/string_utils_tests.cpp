@@ -492,3 +492,104 @@ TEST(StringUtilsTests, Replace) {
     EXPECT_EQ(replace("aaaaaaa", "aa", "!", StartPosition{ 1 }, MaxReplacementCount{ 2 }), "a!!aa");
     EXPECT_EQ(replace("1, 2, 3, 4, 5", ", ", "\n", StartPosition{ 2 }, MaxReplacementCount{ 2 }), "1, 2\n3\n4, 5");
 }
+
+TEST(StringUtilsTests, LeftPad) {
+    using c2k::left_pad;
+    using namespace std::string_literals;
+
+    auto s = "test"s;
+
+    for (auto i = std::size_t{ 0 }; i < s.length(); ++i) {
+        left_pad(s, i, '.');
+        EXPECT_EQ(s, "test");
+    }
+
+    left_pad(s, 5, '.');
+    EXPECT_EQ(s, ".test");
+
+    left_pad(s, 5, '.');
+    EXPECT_EQ(s, ".test");
+
+    left_pad(s, 10, '.');
+    EXPECT_EQ(s, "......test");
+
+    s = "test";
+    left_pad(s, 10);
+    EXPECT_EQ(s, "      test");
+
+    s = "";
+    left_pad(s, 0);
+    EXPECT_EQ(s, "");
+
+    left_pad(s, 3);
+    EXPECT_EQ(s, "   ");
+
+    left_pad(s, 5, '@');
+    EXPECT_EQ(s, "@@   ");
+}
+
+
+TEST(StringUtilsTests, RightPad) {
+    using c2k::right_pad;
+    using namespace std::string_literals;
+
+    auto s = "test"s;
+
+    for (auto i = std::size_t{ 0 }; i < s.size(); ++i) {
+        right_pad(s, i, '.');
+        EXPECT_EQ(s, "test");
+    }
+
+    right_pad(s, 5, '.');
+    EXPECT_EQ(s, "test.");
+
+    right_pad(s, 5, '.');
+    EXPECT_EQ(s, "test.");
+
+    right_pad(s, 10, '.');
+    EXPECT_EQ(s, "test......");
+
+    s = "test";
+    right_pad(s, 10);
+    EXPECT_EQ(s, "test      ");
+
+    s = "";
+    right_pad(s, 0);
+    EXPECT_EQ(s, "");
+
+    right_pad(s, 3);
+    EXPECT_EQ(s, "   ");
+
+    right_pad(s, 5, '@');
+    EXPECT_EQ(s, "   @@");
+}
+
+TEST(StringUtilsTests, LeftPadded) {
+    using c2k::left_padded;
+
+    for (auto i = std::size_t{ 0 }; i < std::size_t{ 4 }; ++i) {
+        EXPECT_EQ(left_padded("test", i, '.'), "test");
+    }
+    EXPECT_EQ(left_padded("test", 5, '.'), ".test");
+    EXPECT_EQ(left_padded("test", 5, '.'), ".test");
+    EXPECT_EQ(left_padded("test", 10, '.'), "......test");
+    EXPECT_EQ(left_padded("test", 10), "      test");
+    EXPECT_EQ(left_padded("", 0), "");
+    EXPECT_EQ(left_padded("", 3), "   ");
+    EXPECT_EQ(left_padded("   ", 5, '@'), "@@   ");
+}
+
+
+TEST(StringUtilsTests, RightPadded) {
+    using c2k::right_padded;
+    for (auto i = std::size_t{ 0 }; i < std::size_t{ 4 }; ++i) {
+        EXPECT_EQ(right_padded("test", i, '.'), "test");
+    }
+    EXPECT_EQ(right_padded("test", 5, '.'), "test.");
+    EXPECT_EQ(right_padded("test", 5, '.'), "test.");
+    EXPECT_EQ(right_padded("test", 10, '.'), "test......");
+    EXPECT_EQ(right_padded("test", 10), "test      ");
+    EXPECT_EQ(right_padded("", 0), "");
+    EXPECT_EQ(right_padded("", 3), "   ");
+    EXPECT_EQ(right_padded("   ", 5, '@'), "   @@");
+}
