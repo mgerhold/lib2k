@@ -44,7 +44,7 @@ namespace c2k {
             return *this;
         }
 
-        ~UniqueValue() {
+        ~UniqueValue() noexcept {
             if (m_value.has_value()) {
                 m_deleter(m_value.value());
             }

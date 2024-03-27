@@ -1,16 +1,17 @@
 #include <concepts>
 #include <gtest/gtest.h>
 #include <lib2k/unique_value.hpp>
+#include <limits>
 #include <memory>
 #include <unordered_set>
 
 using c2k::UniqueValue;
 
 static inline auto created_handles = std::unordered_set<int>{};
-static inline auto next_destroy_handle = 1;
+static inline auto next_free_handle = 1; // 0 means "invalid/null handle"
 
 [[nodiscard]] static int create() {
-    auto const handle = next_destroy_handle++;
+    auto const handle = next_free_handle++;
     [[maybe_unused]] auto const [_, inserted] = created_handles.insert(handle);
     assert(inserted);
     return handle;
@@ -20,10 +21,11 @@ static void destroy(int const handle) {
     if (handle == 0) {
         return;
     }
-    auto const num_removed = created_handles.erase(handle);
-    if (num_removed == 0) {
+    if (not created_handles.contains(handle)) {
+        //if (num_removed == 0) {
         throw std::logic_error{ "trying to destroy non-existing handle" };
     }
+    auto const num_removed = created_handles.erase(handle);
     assert(num_removed == 1);
 }
 
@@ -69,4 +71,12 @@ TEST(UniqueValueTests, VectorOfUniqueValues) {
 TEST(UniqueValueTests, UniqueValueWithNonCopyableInside) {
     auto original_handle = UniqueValue{ std::make_unique<int>(42) };
     auto const new_handle = std::move(original_handle);
+}
+
+TEST(UniqueValueTests, DestroyIsCalledOnInvalidHandle) {
+#ifdef _WIN32
+    EXPECT_DEATH({ std::ignore = (UniqueValue{ 42, destroy }); }, ""); // MSVC doesn't show the exception message
+#else
+    EXPECT_DEATH({ std::ignore = (UniqueValue{ 42, destroy }); }, "trying to destroy non-existing handle");
+#endif
 }
