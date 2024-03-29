@@ -11,6 +11,7 @@ add_library(lib2k
         include/lib2k/non_null_owner.hpp
         include/lib2k/synchronized.hpp
         include/lib2k/unreachable.hpp
+        include/lib2k/static_vector.hpp
 )
 
 target_include_directories(lib2k PUBLIC include)
