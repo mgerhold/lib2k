@@ -2,15 +2,16 @@
 
 #include <functional>
 #include <optional>
+#include <utility>
 
 namespace c2k {
 
     namespace detail {
         template<typename T>
         struct UniqueValueDefaultDeleter final {
-            constexpr void operator()(T const&) {}
+            constexpr void operator()(T const&) { }
         };
-    }
+    } // namespace detail
 
     /**
      * @class UniqueValue
@@ -29,7 +30,11 @@ namespace c2k {
     class UniqueValue final {
     private:
         std::optional<T> m_value;
+#ifdef _MSC_VER
+        [[msvc::no_unique_address]] Deleter m_deleter;
+#else
         [[no_unique_address]] Deleter m_deleter;
+#endif
 
     public:
         explicit UniqueValue(T value) : UniqueValue{ std::move(value), Deleter{} } { }
