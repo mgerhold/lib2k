@@ -4,6 +4,14 @@
 #include <optional>
 
 namespace c2k {
+
+    namespace detail {
+        template<typename T>
+        struct UniqueValueDefaultDeleter final {
+            constexpr void operator()(T const&) {}
+        };
+    }
+
     /**
      * @class UniqueValue
      * @brief Represents a unique value with a customizable deleter.
@@ -17,11 +25,11 @@ namespace c2k {
      * object via a pointer. Use-cases for this can be non-pointer resource handles,
      * for example file descriptors (files, sockets, ...) or GPU buffers.
      */
-    template<typename T, std::invocable<T> Deleter = decltype([](T const&) {})>
+    template<typename T, std::invocable<T> Deleter = detail::UniqueValueDefaultDeleter<T>>
     class UniqueValue final {
     private:
         std::optional<T> m_value;
-        Deleter m_deleter;
+        [[no_unique_address]] Deleter m_deleter;
 
     public:
         explicit UniqueValue(T value) : UniqueValue{ std::move(value), Deleter{} } { }
