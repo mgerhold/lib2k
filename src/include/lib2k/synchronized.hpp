@@ -1,14 +1,7 @@
 #pragma once
 
-#include <atomic>
-#include <cassert>
 #include <condition_variable>
-#include <exception>
-#include <memory>
 #include <mutex>
-#include <thread>
-#include <variant>
-#include <vector>
 
 namespace c2k {
     template<typename T>

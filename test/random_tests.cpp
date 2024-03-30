@@ -8,7 +8,7 @@ TEST(RandomTests, SameSeedProducesSameResults) {
     static constexpr auto num_iterations = 100;
     auto const seed = Random{}.next_integral<Random::Seed>();
 
-    auto const original = [&]() {
+    auto const original = [&] {
         auto random = Random{ seed };
         auto values = std::vector<int>{};
         values.reserve(num_values);
@@ -43,7 +43,7 @@ TEST(RandomTests, GetAndSetState) {
     auto random = Random{};
     auto const state = random.state();
 
-    auto const original = [&]() {
+    auto const original = [&] {
         auto values = std::vector<int>{};
         values.reserve(num_values);
         for (auto i = 0; i < num_values; ++i) {

@@ -5,7 +5,6 @@
 #include <memory>
 #include <mutex>
 #include <numeric>
-#include <stop_token>
 #include <string>
 #include <thread>
 #include <vector>
