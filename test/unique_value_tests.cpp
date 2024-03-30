@@ -77,9 +77,9 @@ TEST_F(UniqueValueFixture, DestroyIsCalledOnInvalidHandle) {
 #ifdef _WIN32
     EXPECT_DEATH(
             {
-                // MSVC doesn't show the exception message
                 std::ignore = (UniqueValue{ 42, [this](auto const handle) { destroy(handle); } });
             },
+            // MSVC doesn't show the exception message
             ""
     );
 #else
