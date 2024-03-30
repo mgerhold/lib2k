@@ -4,6 +4,16 @@
 #include <optional>
 #include <utility>
 
+#ifdef _MSC_VER
+#if _MSC_VER >= 1929
+#define LIB2K_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#else
+#error "MSVC compiler not capable of applying [[msvc::no_unique_address]], upgrade your compiler"
+#endif
+#else
+#define LIB2K_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#endif
+
 namespace c2k {
 
     namespace detail {
@@ -30,11 +40,7 @@ namespace c2k {
     class UniqueValue final {
     private:
         std::optional<T> m_value;
-#ifdef _MSC_VER
-        [[msvc::no_unique_address]] Deleter m_deleter;
-#else
-        [[no_unique_address]] Deleter m_deleter;
-#endif
+        LIB2K_NO_UNIQUE_ADDRESS Deleter m_deleter;
 
     public:
         explicit UniqueValue(T value) : UniqueValue{ std::move(value), Deleter{} } { }
@@ -58,6 +64,16 @@ namespace c2k {
         }
 
         ~UniqueValue() noexcept {
+            // this static_assert is inside the destructor since the destructor is (almost?) guaranteed
+            // to be instantiated when this class template is instantiated
+            // clang-format off
+            static_assert(
+                sizeof(UniqueValue) == sizeof(std::optional<T>)
+                or not std::is_empty_v<Deleter>,
+                "compiler did not successfully apply [[no_unique_address]] attribute"
+            );
+            // clang-format on
+
             if (m_value.has_value()) {
                 m_deleter(m_value.value());
             }
