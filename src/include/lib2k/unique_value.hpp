@@ -19,7 +19,7 @@ namespace c2k {
     namespace detail {
         template<typename T>
         struct UniqueValueDefaultDeleter final {
-            constexpr void operator()(T const&) { }
+            constexpr void operator()(T const&) {}
         };
     } // namespace detail
 
@@ -43,15 +43,15 @@ namespace c2k {
         LIB2K_NO_UNIQUE_ADDRESS Deleter m_deleter;
 
     public:
-        explicit UniqueValue(T value) : UniqueValue{ std::move(value), Deleter{} } { }
-        UniqueValue(T value, Deleter deleter) : m_value{ std::move(value) }, m_deleter{ std::move(deleter) } { }
+        explicit UniqueValue(T value) : UniqueValue{ std::move(value), Deleter{} } {}
+        UniqueValue(T value, Deleter deleter) : m_value{ std::move(value) }, m_deleter{ std::move(deleter) } {}
 
         UniqueValue(UniqueValue const& other) = delete;
         UniqueValue& operator=(UniqueValue const& other) = delete;
 
         UniqueValue(UniqueValue&& other) noexcept
             : m_value{ std::exchange(other.m_value, std::nullopt) },
-              m_deleter{ std::move(other.m_deleter) } { }
+              m_deleter{ std::move(other.m_deleter) } {}
 
         UniqueValue& operator=(UniqueValue&& other) noexcept {
             if (this == std::addressof(other)) {
@@ -105,6 +105,14 @@ namespace c2k {
 
         [[nodiscard]] T& operator*() {
             return value();
+        }
+
+        [[nodiscard]] T* operator->() {
+            return &value();
+        }
+
+        [[nodiscard]] T const* operator->() const {
+            return &value();
         }
     };
 } // namespace c2k
