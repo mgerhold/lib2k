@@ -36,7 +36,7 @@ using c2k::UniqueValue;
 
 TEST_F(UniqueValueFixture, CreateUniqueValue) {
     {
-        auto const handle = UniqueValue{ create(), [this](auto const handle) { destroy(handle); } };
+        auto const handle = UniqueValue{ create(), [this](auto const n) { destroy(n); } };
         EXPECT_GT(*handle, 0);
     }
     EXPECT_TRUE(all_destroyed());

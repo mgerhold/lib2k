@@ -392,7 +392,7 @@ TEST(StringUtilsTests, Split) {
             (std::vector{ "data"s, " more data"s, " even more data"s })
     );
     EXPECT_EQ(split("this.is.a.test", "."), (std::vector{ "this"s, "is"s, "a"s, "test"s }));
-    EXPECT_EQ(split("no_delimiters", "#"), (std::vector{ "no_delimiters"s }));
+    EXPECT_EQ(split("no_delimiters", "#"), std::vector{ "no_delimiters"s });
     EXPECT_EQ(split("hello\nworld\n", "\n"), (std::vector{ "hello"s, "world"s, ""s }));
     EXPECT_EQ(split(";semi;colons;everywhere;", ";"), (std::vector{ ""s, "semi"s, "colons"s, "everywhere"s, ""s }));
 }

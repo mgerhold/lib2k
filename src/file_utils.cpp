@@ -5,7 +5,7 @@
 namespace c2k {
 
     [[nodiscard]] tl::expected<std::string, ReadFileError> read_file(std::filesystem::path const& path) {
-        auto file = std::ifstream{ path };
+        auto const file = std::ifstream{ path };
         if (not file) {
             return tl::unexpected{ ReadFileError::UnableToOpenFileForReading };
         }
