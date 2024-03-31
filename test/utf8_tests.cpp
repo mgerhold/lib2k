@@ -143,3 +143,9 @@ TEST(Utf8StringTests, Iterating) {
     }
     EXPECT_EQ(stream.str(), "H\ne\nl\nl\no\n,\n \n🌍\n!\n");
 }
+
+TEST(Utf8StringTests, OutputOperator) {
+    auto stream = std::ostringstream{};
+    stream << "Hello, 🌍!"_utf8;
+    EXPECT_EQ(stream.str(), "Hello, 🌍!");
+}

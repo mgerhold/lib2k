@@ -144,5 +144,9 @@ namespace c2k {
                 static_cast<std::byte const*>(static_cast<void const*>(m_data.data() + m_data.size())),
             };
         }
+
+        friend std::ostream& operator<<(std::ostream& os, Utf8String const& string) {
+            return os << string.m_data;
+        }
     };
 } // namespace c2k
