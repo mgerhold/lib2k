@@ -56,9 +56,7 @@ namespace c2k {
 
         [[nodiscard]] static tl::expected<Utf8Char, Utf8Error> from_bytes(std::span<std::byte const> bytes);
 
-        [[nodiscard]] bool constexpr operator==(Utf8Char const other) const {
-            return m_codepoint == other.m_codepoint;
-        }
+        [[nodiscard]] bool constexpr operator==(Utf8Char const& other) const = default;
 
         friend std::ostream& operator<<(std::ostream& os, Utf8Char const c) {
             for (auto const byte : c.m_codepoint) {
