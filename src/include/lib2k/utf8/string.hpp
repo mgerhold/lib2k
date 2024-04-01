@@ -3,6 +3,7 @@
 #include "../concepts.hpp"
 #include "char.hpp"
 #include "literals.hpp"
+#include <cstdint>
 #include <string>
 
 namespace c2k {
