@@ -9,7 +9,7 @@ namespace c2k {
     class InsufficientCapacity final : public std::runtime_error {
     public:
         explicit InsufficientCapacity(std::size_t const capacity)
-            : std::runtime_error{ std::format("insufficient capacity '{}'", capacity) } { }
+            : std::runtime_error{ std::format("insufficient capacity '{}'", capacity) } {}
     };
 
     template<typename T, std::size_t max_capacity>
@@ -135,6 +135,18 @@ namespace c2k {
             }
             m_data[m_size] = T{ std::forward<decltype(args)>(args)... };
             ++m_size;
+        }
+
+        [[nodiscard]] constexpr bool operator==(StaticVector const& other) const {
+            if (size() != other.size()) {
+                return false;
+            }
+            for (auto i = std::size_t{ 0 }; i < size(); ++i) {
+                if (at(i) != other.at(i)) {
+                    return false;
+                }
+            }
+            return true;
         }
     };
 } // namespace c2k

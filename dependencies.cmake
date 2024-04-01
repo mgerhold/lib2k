@@ -11,6 +11,16 @@ function(lib2k_setup_dependencies)
             "EXPECTED_BUILD_TESTS OFF"
             "EXPECTED_BUILD_PACKAGE_DEB OFF"
     )
+
+    # todo: add option to include this dependency
+    CPMAddPackage(
+            NAME UTF8_PROC
+            GITHUB_REPOSITORY JuliaStrings/utf8proc
+            VERSION 2.9.0
+            OPTIONS
+            "UTF8PROC_INSTALL OFF"
+    )
+
     if (${lib2k_build_tests})
         CPMAddPackage(
                 NAME GOOGLE_TEST
