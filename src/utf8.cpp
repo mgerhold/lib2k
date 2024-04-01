@@ -3,7 +3,29 @@
 #include <lib2k/utf8.hpp>
 #include <utf8proc.h>
 
+
 namespace c2k {
+    [[nodiscard]] utf8proc_int32_t to_utf8proc_codepoint(StaticVector<std::byte, 4> const codepoint) {
+        auto utf8proc_codepoint = utf8proc_int32_t{};
+        auto const result = utf8proc_iterate(
+                static_cast<utf8proc_uint8_t const*>(static_cast<void const*>(&codepoint.front())),
+                static_cast<utf8proc_ssize_t>(codepoint.size()),
+                &utf8proc_codepoint
+        );
+        assert(result >= 0);
+        return utf8proc_codepoint;
+    }
+
+    [[nodiscard]] Utf8Char to_utf8char(utf8proc_int32_t const codepoint) {
+        auto buffer = std::array<utf8proc_uint8_t, 4>{};
+        auto const num_bytes = utf8proc_encode_char(codepoint, buffer.data());
+        auto result = StaticVector<std::byte, 4>{};
+        for (auto i = decltype(num_bytes){ 0 }; i < num_bytes; ++i) {
+            result.push_back(static_cast<std::byte>(buffer.at(i)));
+        }
+        return Utf8Char::from_bytes_unchecked(std::span{ result.begin(), result.end() });
+    }
+
     Utf8Char::Utf8Char(char const c) {
         auto utf8proc_codepoint = utf8proc_int32_t{};
         auto const result = utf8proc_iterate(
@@ -35,6 +57,22 @@ namespace c2k {
             codepoint.push_back(bytes[i]);
         }
         return Utf8Char{ codepoint };
+    }
+
+    [[nodiscard]] bool Utf8Char::is_uppercase() const {
+        return utf8proc_isupper(to_utf8proc_codepoint(m_codepoint)) == 1;
+    }
+
+    [[nodiscard]] bool Utf8Char::is_lowercase() const {
+        return utf8proc_islower(to_utf8proc_codepoint(m_codepoint)) == 1;
+    }
+
+    [[nodiscard]] Utf8Char Utf8Char::to_uppercase() const {
+        return to_utf8char(utf8proc_toupper(to_utf8proc_codepoint(m_codepoint)));
+    }
+
+    [[nodiscard]] Utf8Char Utf8Char::to_lowercase() const {
+        return to_utf8char(utf8proc_tolower(to_utf8proc_codepoint(m_codepoint)));
     }
 
     [[nodiscard]] Utf8Char Utf8Literals::operator""_utf8(char const c) {
@@ -79,6 +117,10 @@ namespace c2k {
 
     [[nodiscard]] Utf8Char const& Utf8String::ConstIterator::operator*() const {
         return m_next;
+    }
+
+    [[nodiscard]] Utf8Char const* Utf8String::ConstIterator::operator->() const {
+        return &m_next;
     }
 
     Utf8String::ConstIterator& Utf8String::ConstIterator::operator++() {
@@ -313,5 +355,13 @@ namespace c2k {
             new_string = c + new_string;
         }
         *this = std::move(new_string);
+    }
+
+    [[nodiscard]] Utf8String Utf8String::to_uppercase() const {
+        return transform([](Utf8Char const c) { return c.to_uppercase(); });
+    }
+
+    [[nodiscard]] Utf8String Utf8String::to_lowercase() const {
+        return transform([](Utf8Char const c) { return c.to_lowercase(); });
     }
 } // namespace c2k

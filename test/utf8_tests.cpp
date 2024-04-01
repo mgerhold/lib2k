@@ -1,7 +1,7 @@
+#include <algorithm>
 #include <gtest/gtest.h>
 #include <lib2k/utf8.hpp>
 #include <sstream>
-#include <algorithm>
 
 using c2k::Utf8Char;
 using c2k::Utf8Error;
@@ -35,6 +35,38 @@ TEST(Utf8CharTests, FromBytes) {
         }).value()
     );
     // clang-format on
+}
+
+TEST(Utf8CharTests, IsUppercase) {
+    EXPECT_TRUE('A'_utf8.is_uppercase());
+    EXPECT_TRUE("Ä"_utf8.cbegin()->is_uppercase());
+    EXPECT_TRUE("Φ"_utf8.cbegin()->is_uppercase());
+    EXPECT_FALSE('a'_utf8.is_uppercase());
+    EXPECT_FALSE("ä"_utf8.cbegin()->is_uppercase());
+    EXPECT_FALSE("🌍"_utf8.cbegin()->is_uppercase());
+}
+
+TEST(Utf8CharTests, IsLowercase) {
+    EXPECT_TRUE('a'_utf8.is_lowercase());
+    EXPECT_TRUE("ä"_utf8.cbegin()->is_lowercase());
+    EXPECT_TRUE("ѭ"_utf8.cbegin()->is_lowercase());
+    EXPECT_FALSE('A'_utf8.is_lowercase());
+    EXPECT_FALSE("Ä"_utf8.cbegin()->is_lowercase());
+    EXPECT_FALSE("🌍"_utf8.cbegin()->is_lowercase());
+}
+
+TEST(Utf8CharTests, ToUppercase) {
+    EXPECT_EQ("a"_utf8.cbegin()->to_uppercase(), *("A"_utf8.cbegin()));
+    EXPECT_EQ("ä"_utf8.cbegin()->to_uppercase(), *("Ä"_utf8.cbegin()));
+    EXPECT_EQ("φ"_utf8.cbegin()->to_uppercase(), *("Φ"_utf8.cbegin()));
+    EXPECT_EQ("🌍"_utf8.cbegin()->to_uppercase(), *("🌍"_utf8.cbegin()));
+}
+
+TEST(Utf8CharTests, ToLowercase) {
+    EXPECT_EQ("A"_utf8.cbegin()->to_lowercase(), *("a"_utf8.cbegin()));
+    EXPECT_EQ("Ä"_utf8.cbegin()->to_lowercase(), *("ä"_utf8.cbegin()));
+    EXPECT_EQ("Φ"_utf8.cbegin()->to_lowercase(), *("φ"_utf8.cbegin()));
+    EXPECT_EQ("🌍"_utf8.cbegin()->to_lowercase(), *("🌍"_utf8.cbegin()));
 }
 
 TEST(Utf8CharTests, Printing) {
@@ -290,6 +322,20 @@ TEST(Utf8StringTests, Reverse) {
     str.clear();
     str.reverse();
     EXPECT_TRUE(str.is_empty());
+}
+
+TEST(Utf8StringTests, ToUppercase) {
+    EXPECT_EQ("Hello, 🌍!"_utf8.to_uppercase(), "HELLO, 🌍!");
+    EXPECT_EQ("🦀🥵🌍"_utf8.to_uppercase(), "🦀🥵🌍");
+    EXPECT_EQ(""_utf8.to_uppercase(), "");
+    EXPECT_EQ("The symbol φ is often used in math."_utf8.to_uppercase(), "THE SYMBOL Φ IS OFTEN USED IN MATH.");
+}
+
+TEST(Utf8StringTests, ToLowercase) {
+    EXPECT_EQ("Hello, 🌍!"_utf8.to_lowercase(), "hello, 🌍!");
+    EXPECT_EQ("🦀🥵🌍"_utf8.to_lowercase(), "🦀🥵🌍");
+    EXPECT_EQ(""_utf8.to_lowercase(), "");
+    EXPECT_EQ("THE SYMBOL Φ IS OFTEN USED IN MATH."_utf8.to_lowercase(), "the symbol φ is often used in math.");
 }
 
 TEST(Utf8StringTests, OutputOperator) {

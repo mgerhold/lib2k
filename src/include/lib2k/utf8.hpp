@@ -1,8 +1,9 @@
 #pragma once
 
+#include "concepts.hpp"
+#include "static_vector.hpp"
 #include <cstdint>
 #include <iostream>
-#include <lib2k/static_vector.hpp>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -63,6 +64,11 @@ namespace c2k {
 
         [[nodiscard]] bool constexpr operator==(Utf8Char const& other) const = default;
 
+        [[nodiscard]] bool is_uppercase() const;
+        [[nodiscard]] bool is_lowercase() const;
+        [[nodiscard]] Utf8Char to_uppercase() const;
+        [[nodiscard]] Utf8Char to_lowercase() const;
+
         friend std::ostream& operator<<(std::ostream& os, Utf8Char const c) {
             for (auto const byte : c.m_codepoint) {
                 os << static_cast<unsigned char>(byte);
@@ -70,7 +76,6 @@ namespace c2k {
             return os;
         }
     };
-
 
     class Utf8String final {
         friend Utf8String Utf8Literals::operator""_utf8(char const* str, std::size_t length);
@@ -98,6 +103,7 @@ namespace c2k {
             constexpr ConstIterator() = default;
 
             [[nodiscard]] Utf8Char const& operator*() const;
+            [[nodiscard]] Utf8Char const* operator->() const;
             ConstIterator& operator++();
             ConstIterator operator++(int);
             [[nodiscard]] ConstIterator operator+(difference_type offset) const;
@@ -184,6 +190,16 @@ namespace c2k {
         ConstIterator erase(ConstIterator position);
         ConstIterator erase(ConstIterator first, ConstIterator last);
         void reverse();
+        [[nodiscard]] Utf8String to_uppercase() const;
+        [[nodiscard]] Utf8String to_lowercase() const;
+
+        [[nodiscard]] Utf8String transform(Invocable<Utf8Char, Utf8Char> auto&& transformer) const {
+            auto result = Utf8String{};
+            for (auto const c : *this) {
+                result += transformer(c);
+            }
+            return result;
+        }
 
         friend std::ostream& operator<<(std::ostream& os, Utf8String const& string) {
             return os << string.m_data;
