@@ -20,6 +20,10 @@ add_library(lib2k
         utf8/char.cpp
         utf8/string.cpp
         include/lib2k/utf8/errors.hpp
+        include/lib2k/utf8/string_view.hpp
+        utf8/string_view.cpp
+        include/lib2k/utf8/const_iterator.hpp
+        utf8/const_iterator.cpp
 )
 
 target_include_directories(lib2k PUBLIC include)
