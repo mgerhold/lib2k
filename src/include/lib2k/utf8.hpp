@@ -36,6 +36,8 @@ namespace c2k {
         explicit constexpr Utf8Char(Codepoint const codepoint) : m_codepoint{ codepoint } { }
 
     public:
+        constexpr Utf8Char() : Utf8Char{ '\0' } { }
+
         constexpr explicit Utf8Char(char const c) {
             auto const as_unsigned = static_cast<unsigned char>(c);
             if (as_unsigned > 127) {
@@ -83,6 +85,7 @@ namespace c2k {
         std::string m_data;
         std::size_t m_num_chars;
 
+    public:
         class ConstIterator {
             friend class Utf8String;
 
@@ -108,11 +111,7 @@ namespace c2k {
             [[nodiscard]] bool operator==(ConstIterator const& other) const;
         };
 
-        static_assert(std::input_or_output_iterator<ConstIterator>);
-        static_assert(std::input_iterator<ConstIterator>);
-        // todo: check why the following assert fails with GCC and clang
-        // static_assert(std::forward_iterator<ConstIterator>);
-
+    private:
         explicit Utf8String(std::string data, std::size_t const num_chars)
             : m_data{ std::move(data) },
               m_num_chars{ num_chars } { }
@@ -149,4 +148,15 @@ namespace c2k {
             return os << string.m_data;
         }
     };
+
+    /* These asserts must not appear within the Utf8String class since some compilers
+     * will consider ConstIterator to be incomplete there. According to an answer on
+     * StackOverflow (see https://stackoverflow.com/a/75815361/7540548), this is an open
+     * defect in the standard and would be undefined behavior.
+     * By moving the asserts out of the enclosing class, we can ensure that the inner
+     * class is complete and the following asserts do not expose undefined behavior. */
+    static_assert(std::input_or_output_iterator<Utf8String::ConstIterator>);
+    static_assert(std::input_iterator<Utf8String::ConstIterator>);
+    static_assert(std::forward_iterator<Utf8String::ConstIterator>);
+
 } // namespace c2k
