@@ -36,15 +36,9 @@ namespace c2k {
         explicit constexpr Utf8Char(Codepoint const codepoint) : m_codepoint{ codepoint } { }
 
     public:
-        constexpr Utf8Char() : Utf8Char{ '\0' } { }
+        constexpr Utf8Char() : m_codepoint{ std::byte{ 0 } } { }
 
-        constexpr explicit Utf8Char(char const c) {
-            auto const as_unsigned = static_cast<unsigned char>(c);
-            if (as_unsigned > 127) {
-                throw InvalidUtf8Char{};
-            }
-            m_codepoint = Codepoint{ std::byte{ as_unsigned } };
-        }
+        Utf8Char(char c);
 
         [[nodiscard]] static constexpr Utf8Char from_bytes_unchecked(std::span<std::byte const> const bytes) {
             assert(not bytes.empty());
@@ -71,7 +65,7 @@ namespace c2k {
     class Utf8String;
 
     namespace Utf8Literals {
-        [[nodiscard]] constexpr Utf8Char operator""_utf8(char const c) {
+        [[nodiscard]] inline Utf8Char operator""_utf8(char const c) {
             return Utf8Char{ c };
         }
 
@@ -83,7 +77,6 @@ namespace c2k {
 
     private:
         std::string m_data;
-        std::size_t m_num_chars;
 
     public:
         class ConstIterator {
@@ -108,27 +101,29 @@ namespace c2k {
             [[nodiscard]] Utf8Char operator*() const;
             ConstIterator& operator++();
             ConstIterator operator++(int);
+            [[nodiscard]] ConstIterator operator+(difference_type offset) const;
+            [[nodiscard]] difference_type operator-(ConstIterator other) const;
             [[nodiscard]] bool operator==(ConstIterator const& other) const;
         };
 
-    private:
-        explicit Utf8String(std::string data, std::size_t const num_chars)
-            : m_data{ std::move(data) },
-              m_num_chars{ num_chars } { }
+        [[nodiscard]] static Utf8String from_string_unchecked(std::string data);
 
     public:
+        Utf8String() = default;
+        Utf8String(std::string string);
+        Utf8String(char const* const string) : Utf8String{ std::string{ string } } { }
         [[nodiscard]] static tl::expected<Utf8String, Utf8Error> from_chars(std::string chars);
-        [[nodiscard]] static tl::expected<std::size_t, Utf8Error> try_get_utf8_num_chars(std::string_view buffer);
+        [[nodiscard]] static bool is_valid_utf8(std::string_view string);
 
         [[nodiscard]] char const* c_str() const {
             return m_data.data();
         }
 
-        [[nodiscard]] std::size_t num_chars() const {
-            return m_num_chars;
+        [[nodiscard]] std::size_t calculate_char_count() const {
+            return cend() - cbegin();
         }
 
-        [[nodiscard]] std::size_t char_width() const;
+        [[nodiscard]] std::size_t calculate_char_width() const;
 
         [[nodiscard]] bool operator==(Utf8String const& other) const;
 
@@ -138,11 +133,50 @@ namespace c2k {
             };
         }
 
+        [[nodiscard]] ConstIterator cbegin() const {
+            return begin();
+        }
+
         [[nodiscard]] ConstIterator end() const {
             return ConstIterator{
                 static_cast<std::byte const*>(static_cast<void const*>(m_data.data() + m_data.size())),
             };
         }
+
+        [[nodiscard]] ConstIterator cend() const {
+            return end();
+        }
+
+        void append(Utf8Char c);
+
+        void append(Utf8String const& string);
+
+        Utf8String& operator+=(Utf8Char const c) {
+            append(c);
+            return *this;
+        }
+
+        Utf8String& operator+=(Utf8String const& other) {
+            append(other);
+            return *this;
+        }
+
+        [[nodiscard]] bool is_empty() const {
+            return m_data.empty();
+        }
+
+        void clear() {
+            m_data.clear();
+        }
+
+        [[nodiscard]] ConstIterator find(Utf8Char needle) const;
+        [[nodiscard]] ConstIterator find(Utf8Char needle, ConstIterator start) const;
+        [[nodiscard]] ConstIterator find(Utf8Char needle, ConstIterator::difference_type start_position) const;
+        [[nodiscard]] ConstIterator find(Utf8String const& needle) const;
+        [[nodiscard]] ConstIterator find(Utf8String const& needle, ConstIterator start) const;
+        [[nodiscard]] ConstIterator find(Utf8String const& needle, ConstIterator::difference_type start_position) const;
+        ConstIterator erase(ConstIterator position);
+        ConstIterator erase(ConstIterator first, ConstIterator last);
 
         friend std::ostream& operator<<(std::ostream& os, Utf8String const& string) {
             return os << string.m_data;

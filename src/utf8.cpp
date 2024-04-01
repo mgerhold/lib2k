@@ -4,6 +4,19 @@
 #include <utf8proc.h>
 
 namespace c2k {
+    Utf8Char::Utf8Char(char const c) {
+        auto utf8proc_codepoint = utf8proc_int32_t{};
+        auto const result = utf8proc_iterate(
+                static_cast<utf8proc_uint8_t const*>(static_cast<void const*>(&c)),
+                static_cast<utf8proc_ssize_t>(sizeof(c)),
+                &utf8proc_codepoint
+        );
+        if (result < 0) {
+            throw InvalidUtf8Char{};
+        }
+        m_codepoint = Codepoint{ static_cast<std::byte>(c) };
+    }
+
     [[nodiscard]] tl::expected<Utf8Char, Utf8Error> Utf8Char::from_bytes(std::span<std::byte const> const bytes) {
         if (bytes.empty()) {
             return tl::unexpected{ Utf8Error::InvalidBytesRange };
@@ -25,11 +38,9 @@ namespace c2k {
     }
 
     [[nodiscard]] Utf8String Utf8Literals::operator""_utf8(char const* const str, std::size_t const length) {
-        auto const result = Utf8String::from_chars(std::string{ str, str + length });
-        if (not result.has_value()) {
-            throw InvalidUtf8String{};
-        }
-        return result.value();
+        return Utf8String{
+            std::string{ str, length }
+        };
     }
 
     Utf8String::ConstIterator::ConstIterator(std::byte const* const start) : m_next_char_start{ start } {
@@ -74,23 +85,55 @@ namespace c2k {
         return result;
     }
 
+    [[nodiscard]] Utf8String::ConstIterator Utf8String::ConstIterator::operator+(difference_type const offset) const {
+        if (offset < 0) {
+            throw std::invalid_argument{ "cannot add negative value to Utf8String::ConstIterator" };
+        }
+        auto copy = *this;
+        for (auto i = difference_type{ 0 }; i < offset; ++i) {
+            ++copy;
+        }
+        return copy;
+    }
+
+    // clang-format off
+    [[nodiscard]] Utf8String::ConstIterator::difference_type Utf8String::ConstIterator::operator-(
+        ConstIterator const other
+    ) const { // clang-format on
+        auto distance = difference_type{ 0 };
+        for (auto it = other; it != *this; ++it) {
+            ++distance;
+        }
+        return distance;
+    }
+
     [[nodiscard]] bool Utf8String::ConstIterator::operator==(ConstIterator const& other) const {
         return m_next_char_start == other.m_next_char_start and m_next_char_num_bytes == other.m_next_char_num_bytes;
     }
 
-    [[nodiscard]] tl::expected<Utf8String, Utf8Error> Utf8String::from_chars(std::string chars) {
-        auto const result = try_get_utf8_num_chars(chars);
-        if (not result.has_value()) {
-            return tl::unexpected{ Utf8Error::InvalidUtf8String };
-        }
-        return Utf8String{ std::move(chars), result.value() };
+    [[nodiscard]] Utf8String Utf8String::from_string_unchecked(std::string data) {
+        auto result = Utf8String{};
+        result.m_data = std::move(data);
+        return result;
     }
 
-    [[nodiscard]] tl::expected<std::size_t, Utf8Error> Utf8String::try_get_utf8_num_chars(std::string_view const buffer
-    ) {
-        auto current = buffer.data();
-        auto const end = current + buffer.length();
-        auto num_chars = std::size_t{ 0 };
+    Utf8String::Utf8String(std::string string) {
+        if (not is_valid_utf8(string)) {
+            throw InvalidUtf8String{};
+        }
+        m_data = std::move(string);
+    }
+
+    [[nodiscard]] tl::expected<Utf8String, Utf8Error> Utf8String::from_chars(std::string chars) {
+        if (not is_valid_utf8(chars)) {
+            return tl::unexpected{ Utf8Error::InvalidUtf8String };
+        }
+        return from_string_unchecked(std::move(chars));
+    }
+
+    [[nodiscard]] bool Utf8String::is_valid_utf8(std::string_view const string) {
+        auto current = string.data();
+        auto const end = current + string.length();
         while (current < end) {
             auto const bytes_remaining = static_cast<utf8proc_ssize_t>(end - current);
             auto codepoint = utf8proc_int32_t{};
@@ -100,15 +143,14 @@ namespace c2k {
                     &codepoint
             );
             if (result < 0) {
-                return tl::unexpected{ Utf8Error::InvalidUtf8String };
+                return false;
             }
             current += result;
-            ++num_chars;
         }
-        return num_chars;
+        return true;
     }
 
-    [[nodiscard]] std::size_t Utf8String::char_width() const {
+    [[nodiscard]] std::size_t Utf8String::calculate_char_width() const {
         auto width = std::size_t{ 0 };
         auto current = reinterpret_cast<utf8proc_uint8_t const*>(m_data.data());
 
@@ -117,7 +159,8 @@ namespace c2k {
             auto const bytes_read = utf8proc_iterate(current, -1, &codepoint);
             // clang-format off
             assert(
-                codepoint != -1 and utf8proc_codepoint_valid(codepoint)
+                codepoint != -1
+                and utf8proc_codepoint_valid(codepoint)
                 and "Utf8String objects must always contain valid UTF8"
             );
             // clang-format on
@@ -136,5 +179,89 @@ namespace c2k {
 
     [[nodiscard]] bool Utf8String::operator==(Utf8String const& other) const {
         return m_data == other.m_data;
+    }
+
+    void Utf8String::append(Utf8Char const c) {
+        for (auto const byte : c.m_codepoint) {
+            m_data.push_back(static_cast<char>(byte));
+        }
+    }
+
+    void Utf8String::append(Utf8String const& string) {
+        std::copy(string.m_data.cbegin(), string.m_data.cend(), std::back_inserter(m_data));
+    }
+
+    [[nodiscard]] Utf8String::ConstIterator Utf8String::find(Utf8Char const needle) const {
+        return find(needle, cbegin());
+    }
+
+
+    [[nodiscard]] Utf8String::ConstIterator Utf8String::find(Utf8Char const needle, ConstIterator const start) const {
+        for (auto it = start; it != cend(); ++it) {
+            if (*it == needle) {
+                return it;
+            }
+        }
+        return cend();
+    }
+
+    // clang-format off
+    [[nodiscard]] Utf8String::ConstIterator Utf8String::find(
+        Utf8Char const needle,
+        ConstIterator::difference_type const start_position
+    ) const { // clang-format on
+        return find(needle, cbegin() + start_position);
+    }
+
+    [[nodiscard]] Utf8String::ConstIterator Utf8String::find(Utf8String const& needle) const {
+        return find(needle, cbegin());
+    }
+
+    // clang-format off
+    [[nodiscard]] Utf8String::ConstIterator Utf8String::find(
+        Utf8String const& needle,
+        ConstIterator const start
+    ) const { // clang-format on
+        for (auto it = start; it != cend(); ++it) {
+            auto other = needle.cbegin();
+            for (auto copy = it; copy != cend() and other != needle.cend(); ++copy, ++other) {
+                if (*copy != *other) {
+                    break;
+                }
+            }
+            if (other == needle.cend()) {
+                return it;
+            }
+        }
+        return cend();
+    }
+
+    // clang-format off
+    [[nodiscard]] Utf8String::ConstIterator Utf8String::find(
+        Utf8String const& needle,
+        ConstIterator::difference_type const start_position
+    ) const { // clang-format on
+        return find(needle, cbegin() + start_position);
+    }
+
+    Utf8String::ConstIterator Utf8String::erase(ConstIterator const position) {
+        return erase(position, position + 1);
+    }
+
+    Utf8String::ConstIterator Utf8String::erase(ConstIterator const first, ConstIterator const last) {
+        auto const start_byte_offset = static_cast<std::size_t>(
+                static_cast<char const*>(static_cast<void const*>(first.m_next_char_start)) - m_data.data()
+        );
+        auto const end_byte_offset = static_cast<std::size_t>(
+                static_cast<char const*>(static_cast<void const*>(last.m_next_char_start)) - m_data.data()
+        );
+
+        m_data.erase(start_byte_offset, end_byte_offset - start_byte_offset);
+
+        if (last == cend()) {
+            return cend();
+        }
+
+        return ConstIterator{ first.m_next_char_start };
     }
 } // namespace c2k
