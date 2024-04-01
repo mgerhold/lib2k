@@ -138,7 +138,7 @@ TEST(Utf8StringTests, CharWidth) {
     EXPECT_EQ(Utf8String::from_chars("").value().calculate_char_width(), 0);
     EXPECT_EQ(Utf8String::from_chars("a🦀c").value().calculate_char_width(), 4);
     EXPECT_EQ(Utf8String::from_chars("🦀🌍😊").value().calculate_char_width(), 6);
-    EXPECT_EQ(Utf8String::from_chars("C++ Programming 🚀").value().calculate_char_count(), 17);
+    EXPECT_EQ(Utf8String::from_chars("C++ Programming 🚀").value().calculate_char_width(), 18);
 }
 
 TEST(Utf8StringTests, Iterating) {
