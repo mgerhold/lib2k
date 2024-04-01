@@ -12,8 +12,14 @@ add_library(lib2k
         include/lib2k/synchronized.hpp
         include/lib2k/unreachable.hpp
         include/lib2k/utf8.hpp
-        utf8.cpp
         include/lib2k/static_vector.hpp
+        include/lib2k/utf8/string.hpp
+        include/lib2k/utf8/char.hpp
+        include/lib2k/utf8/literals.hpp
+        utf8/literals.cpp
+        utf8/char.cpp
+        utf8/string.cpp
+        include/lib2k/utf8/errors.hpp
 )
 
 target_include_directories(lib2k PUBLIC include)
