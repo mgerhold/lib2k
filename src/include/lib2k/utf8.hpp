@@ -125,7 +125,7 @@ namespace c2k {
         }
 
         [[nodiscard]] std::size_t calculate_char_count() const {
-            return cend() - cbegin();
+            return static_cast<std::size_t>(cend() - cbegin());
         }
 
         [[nodiscard]] std::size_t calculate_char_width() const;
@@ -168,8 +168,8 @@ namespace c2k {
 
         [[nodiscard]] Utf8String operator+(Utf8Char c);
         [[nodiscard]] Utf8String operator+(Utf8String const& other);
-        [[nodiscard]] friend Utf8String operator+(Utf8Char c, Utf8String const& string);
-        [[nodiscard]] friend Utf8String operator+(Utf8String const& lhs, Utf8String const& rhs);
+        friend Utf8String operator+(Utf8Char c, Utf8String const& string);
+        friend Utf8String operator+(Utf8String const& lhs, Utf8String const& rhs);
 
         [[nodiscard]] bool is_empty() const {
             return m_data.empty();
