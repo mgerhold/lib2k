@@ -85,6 +85,9 @@ namespace c2k {
         private:
             std::byte const* m_next_char_start{ nullptr };
             std::uint8_t m_next_char_num_bytes{ 0 };
+            // To make it impossible to assign into the dereferenced iterator, we hold the next Utf8Char instance
+            // to return in a member. This allows us to return a const& and thus prohibit assignment.
+            Utf8Char m_next;
 
             explicit ConstIterator(std::byte const* start);
 
@@ -93,12 +96,8 @@ namespace c2k {
             using value_type = Utf8Char;
 
             constexpr ConstIterator() = default;
-            ConstIterator(ConstIterator const&) = default;
-            ConstIterator(ConstIterator&&) = default;
-            ConstIterator& operator=(ConstIterator const&) = default;
-            ConstIterator& operator=(ConstIterator&&) = default;
 
-            [[nodiscard]] Utf8Char operator*() const;
+            [[nodiscard]] Utf8Char const& operator*() const;
             ConstIterator& operator++();
             ConstIterator operator++(int);
             [[nodiscard]] ConstIterator operator+(difference_type offset) const;
@@ -161,6 +160,11 @@ namespace c2k {
             return *this;
         }
 
+        [[nodiscard]] Utf8String operator+(Utf8Char c);
+        [[nodiscard]] Utf8String operator+(Utf8String const& other);
+        [[nodiscard]] friend Utf8String operator+(Utf8Char c, Utf8String const& string);
+        [[nodiscard]] friend Utf8String operator+(Utf8String const& lhs, Utf8String const& rhs);
+
         [[nodiscard]] bool is_empty() const {
             return m_data.empty();
         }
@@ -168,6 +172,8 @@ namespace c2k {
         void clear() {
             m_data.clear();
         }
+
+        void reserve(std::size_t new_capacity_in_bytes);
 
         [[nodiscard]] ConstIterator find(Utf8Char needle) const;
         [[nodiscard]] ConstIterator find(Utf8Char needle, ConstIterator start) const;
@@ -177,6 +183,7 @@ namespace c2k {
         [[nodiscard]] ConstIterator find(Utf8String const& needle, ConstIterator::difference_type start_position) const;
         ConstIterator erase(ConstIterator position);
         ConstIterator erase(ConstIterator first, ConstIterator last);
+        void reverse();
 
         friend std::ostream& operator<<(std::ostream& os, Utf8String const& string) {
             return os << string.m_data;

@@ -281,6 +281,17 @@ TEST(Utf8StringTests, Erase) {
     EXPECT_EQ(str.calculate_char_count(), 0);
 }
 
+TEST(Utf8StringTests, Reverse) {
+    auto str = "Hello, 🌍!"_utf8;
+    str.reverse();
+    EXPECT_EQ(str, "!🌍 ,olleH");
+    EXPECT_EQ(str.calculate_char_count(), 9);
+
+    str.clear();
+    str.reverse();
+    EXPECT_TRUE(str.is_empty());
+}
+
 TEST(Utf8StringTests, OutputOperator) {
     auto stream = std::ostringstream{};
     stream << "Hello, 🌍!"_utf8;

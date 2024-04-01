@@ -43,6 +43,19 @@ namespace c2k {
         };
     }
 
+    [[nodiscard]] Utf8String operator+(Utf8Char c, Utf8String const& string) {
+        auto result = Utf8String{};
+        result += c;
+        result += string;
+        return result;
+    }
+
+    [[nodiscard]] Utf8String operator+(Utf8String const& lhs, Utf8String const& rhs) {
+        auto result = lhs;
+        result += rhs;
+        return result;
+    }
+
     Utf8String::ConstIterator::ConstIterator(std::byte const* const start) : m_next_char_start{ start } {
         auto utf8proc_codepoint = utf8proc_int32_t{};
         auto const result = utf8proc_iterate(
@@ -52,14 +65,16 @@ namespace c2k {
         );
         assert(result >= 0);
         m_next_char_num_bytes = static_cast<decltype(m_next_char_num_bytes)>(result);
-    }
 
-    [[nodiscard]] Utf8Char Utf8String::ConstIterator::operator*() const {
         auto codepoint = Utf8Char::Codepoint{};
         for (auto i = decltype(m_next_char_num_bytes){ 0 }; i < m_next_char_num_bytes; ++i) {
             codepoint.push_back(*(m_next_char_start + i));
         }
-        return Utf8Char{ codepoint };
+        m_next = Utf8Char{ codepoint };
+    }
+
+    [[nodiscard]] Utf8Char const& Utf8String::ConstIterator::operator*() const {
+        return m_next;
     }
 
     Utf8String::ConstIterator& Utf8String::ConstIterator::operator++() {
@@ -75,13 +90,19 @@ namespace c2k {
         );
         assert(result >= 0);
         m_next_char_num_bytes = static_cast<decltype(m_next_char_num_bytes)>(result);
+
+        auto codepoint = Utf8Char::Codepoint{};
+        for (auto i = decltype(m_next_char_num_bytes){ 0 }; i < m_next_char_num_bytes; ++i) {
+            codepoint.push_back(*(m_next_char_start + i));
+        }
+        m_next = Utf8Char{ codepoint };
+
         return *this;
     }
 
     Utf8String::ConstIterator Utf8String::ConstIterator::operator++(int) {
         auto const result = *this;
-        ;
-        ++*this;
+        ++(*this);
         return result;
     }
 
@@ -191,6 +212,22 @@ namespace c2k {
         std::copy(string.m_data.cbegin(), string.m_data.cend(), std::back_inserter(m_data));
     }
 
+    [[nodiscard]] Utf8String Utf8String::operator+(Utf8Char const c) {
+        auto copy = *this;
+        copy += c;
+        return copy;
+    }
+
+    [[nodiscard]] Utf8String Utf8String::operator+(Utf8String const& other) {
+        auto copy = *this;
+        copy += other;
+        return copy;
+    }
+
+    void Utf8String::reserve(std::size_t const new_capacity_in_bytes) {
+        m_data.reserve(new_capacity_in_bytes);
+    }
+
     [[nodiscard]] Utf8String::ConstIterator Utf8String::find(Utf8Char const needle) const {
         return find(needle, cbegin());
     }
@@ -263,5 +300,14 @@ namespace c2k {
         }
 
         return ConstIterator{ first.m_next_char_start };
+    }
+
+    void Utf8String::reverse() {
+        auto new_string = Utf8String{};
+        new_string.reserve(m_data.size());
+        for (auto const c : *this) {
+            new_string = c + new_string;
+        }
+        *this = std::move(new_string);
     }
 } // namespace c2k
