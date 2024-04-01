@@ -9,6 +9,15 @@
 #include <tl/expected.hpp>
 
 namespace c2k {
+    class Utf8Char;
+    class Utf8String;
+
+    namespace Utf8Literals {
+        [[nodiscard]] Utf8Char operator""_utf8(char c);
+
+        [[nodiscard]] Utf8String operator""_utf8(char const* str, std::size_t length);
+    } // namespace Utf8Literals
+
     enum class Utf8Error {
         InvalidUtf8String,
         InvalidUtf8Char,
@@ -62,15 +71,6 @@ namespace c2k {
         }
     };
 
-    class Utf8String;
-
-    namespace Utf8Literals {
-        [[nodiscard]] inline Utf8Char operator""_utf8(char const c) {
-            return Utf8Char{ c };
-        }
-
-        [[nodiscard]] Utf8String operator""_utf8(char const* str, std::size_t length);
-    } // namespace Utf8Literals
 
     class Utf8String final {
         friend Utf8String Utf8Literals::operator""_utf8(char const* str, std::size_t length);

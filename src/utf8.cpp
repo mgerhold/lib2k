@@ -37,6 +37,10 @@ namespace c2k {
         return Utf8Char{ codepoint };
     }
 
+    [[nodiscard]] Utf8Char Utf8Literals::operator""_utf8(char const c) {
+        return Utf8Char{ c };
+    }
+
     [[nodiscard]] Utf8String Utf8Literals::operator""_utf8(char const* const str, std::size_t const length) {
         return Utf8String{
             std::string{ str, length }
