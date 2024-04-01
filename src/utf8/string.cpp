@@ -3,7 +3,7 @@
 #include <utf8proc.h>
 
 namespace c2k {
-    [[nodiscard]] Utf8String operator+(Utf8Char c, Utf8String const& string) {
+    [[nodiscard]] Utf8String operator+(Utf8Char const c, Utf8String const& string) {
         auto result = Utf8String{};
         result += c;
         result += string;
@@ -83,7 +83,7 @@ namespace c2k {
 
     // clang-format off
     [[nodiscard]] Utf8String::ConstIterator::difference_type Utf8String::ConstIterator::operator-(
-        ConstIterator const other
+        ConstIterator const& other
     ) const { // clang-format on
         auto distance = difference_type{ 0 };
         for (auto it = other; it != *this; ++it) {
@@ -176,13 +176,13 @@ namespace c2k {
         std::copy(string.m_data.cbegin(), string.m_data.cend(), std::back_inserter(m_data));
     }
 
-    [[nodiscard]] Utf8String Utf8String::operator+(Utf8Char const c) {
+    [[nodiscard]] Utf8String Utf8String::operator+(Utf8Char const c) const {
         auto copy = *this;
         copy += c;
         return copy;
     }
 
-    [[nodiscard]] Utf8String Utf8String::operator+(Utf8String const& other) {
+    [[nodiscard]] Utf8String Utf8String::operator+(Utf8String const& other) const {
         auto copy = *this;
         copy += other;
         return copy;
@@ -197,7 +197,7 @@ namespace c2k {
     }
 
 
-    [[nodiscard]] Utf8String::ConstIterator Utf8String::find(Utf8Char const needle, ConstIterator const start) const {
+    [[nodiscard]] Utf8String::ConstIterator Utf8String::find(Utf8Char const needle, ConstIterator const& start) const {
         for (auto it = start; it != cend(); ++it) {
             if (*it == needle) {
                 return it;
@@ -221,7 +221,7 @@ namespace c2k {
     // clang-format off
     [[nodiscard]] Utf8String::ConstIterator Utf8String::find(
         Utf8String const& needle,
-        ConstIterator const start
+        ConstIterator const& start
     ) const { // clang-format on
         for (auto it = start; it != cend(); ++it) {
             auto other = needle.cbegin();
@@ -245,11 +245,11 @@ namespace c2k {
         return find(needle, cbegin() + start_position);
     }
 
-    Utf8String::ConstIterator Utf8String::erase(ConstIterator const position) {
+    Utf8String::ConstIterator Utf8String::erase(ConstIterator const& position) {
         return erase(position, position + 1);
     }
 
-    Utf8String::ConstIterator Utf8String::erase(ConstIterator const first, ConstIterator const last) {
+    Utf8String::ConstIterator Utf8String::erase(ConstIterator const& first, ConstIterator const& last) {
         auto const start_byte_offset = static_cast<std::size_t>(
                 static_cast<char const*>(static_cast<void const*>(first.m_next_char_start)) - m_data.data()
         );

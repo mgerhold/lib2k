@@ -22,7 +22,7 @@ namespace c2k {
     public:
         constexpr Utf8Char() : m_codepoint{ std::byte{ 0 } } { }
 
-        Utf8Char(char c);
+        Utf8Char(char c); // NOLINT (implicit converting constructor)
 
         [[nodiscard]] static constexpr Utf8Char from_bytes_unchecked(std::span<std::byte const> const bytes) {
             assert(not bytes.empty());

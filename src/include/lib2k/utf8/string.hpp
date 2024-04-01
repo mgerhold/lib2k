@@ -37,7 +37,7 @@ namespace c2k {
             ConstIterator& operator++();
             ConstIterator operator++(int);
             [[nodiscard]] ConstIterator operator+(difference_type offset) const;
-            [[nodiscard]] difference_type operator-(ConstIterator other) const;
+            [[nodiscard]] difference_type operator-(ConstIterator const& other) const;
             [[nodiscard]] bool operator==(ConstIterator const& other) const;
         };
 
@@ -45,8 +45,9 @@ namespace c2k {
 
     public:
         Utf8String() = default;
-        Utf8String(std::string string);
-        Utf8String(char const* const string) : Utf8String{ std::string{ string } } { }
+        Utf8String(std::string string);      // NOLINT (implicit converting constructor)
+        Utf8String(char const* const string) // NOLINT (implicit converting constructor)
+            : Utf8String{ std::string{ string } } { }
         [[nodiscard]] static tl::expected<Utf8String, Utf8Error> from_chars(std::string chars);
         [[nodiscard]] static bool is_valid_utf8(std::string_view string);
 
@@ -96,8 +97,8 @@ namespace c2k {
             return *this;
         }
 
-        [[nodiscard]] Utf8String operator+(Utf8Char c);
-        [[nodiscard]] Utf8String operator+(Utf8String const& other);
+        [[nodiscard]] Utf8String operator+(Utf8Char c) const;
+        [[nodiscard]] Utf8String operator+(Utf8String const& other) const;
         friend Utf8String operator+(Utf8Char c, Utf8String const& string);
         friend Utf8String operator+(Utf8String const& lhs, Utf8String const& rhs);
 
@@ -112,13 +113,13 @@ namespace c2k {
         void reserve(std::size_t new_capacity_in_bytes);
 
         [[nodiscard]] ConstIterator find(Utf8Char needle) const;
-        [[nodiscard]] ConstIterator find(Utf8Char needle, ConstIterator start) const;
+        [[nodiscard]] ConstIterator find(Utf8Char needle, ConstIterator const& start) const;
         [[nodiscard]] ConstIterator find(Utf8Char needle, ConstIterator::difference_type start_position) const;
         [[nodiscard]] ConstIterator find(Utf8String const& needle) const;
-        [[nodiscard]] ConstIterator find(Utf8String const& needle, ConstIterator start) const;
+        [[nodiscard]] ConstIterator find(Utf8String const& needle, ConstIterator const& start) const;
         [[nodiscard]] ConstIterator find(Utf8String const& needle, ConstIterator::difference_type start_position) const;
-        ConstIterator erase(ConstIterator position);
-        ConstIterator erase(ConstIterator first, ConstIterator last);
+        ConstIterator erase(ConstIterator const& position);
+        ConstIterator erase(ConstIterator const& first, ConstIterator const& last);
         void reverse();
         [[nodiscard]] Utf8String to_uppercase() const;
         [[nodiscard]] Utf8String to_lowercase() const;

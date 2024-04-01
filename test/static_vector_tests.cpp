@@ -7,21 +7,21 @@ using c2k::StaticVector;
 
 TEST(StaticVectorTests, DefaultConstruction) {
     static constexpr auto vector = StaticVector<int, 4>{};
-    static_assert(vector.capacity() == 4);
+    static_assert(vector.capacity() == 4); // NOLINT (access to static member through instance)
     static_assert(decltype(vector)::capacity() == 4);
-    static_assert(vector.size() == 0);
+    static_assert(vector.size() == 0); // NOLINT (comparing size with zero instead of calling empty)
     static_assert(vector.empty());
 }
 
 TEST(StaticVectorTests, ConstructionWithInitializerList) {
     static constexpr auto a = StaticVector<int, 4>{ 1, 2, 3, 4 };
-    static_assert(a.capacity() == 4);
+    static_assert(a.capacity() == 4); // NOLINT (access to static member through instance)
     static_assert(decltype(a)::capacity() == 4);
     static_assert(a.size() == 4);
     static_assert(not a.empty());
 
     static constexpr auto b = StaticVector<int, 4>{ 1, 2 };
-    static_assert(b.capacity() == 4);
+    static_assert(b.capacity() == 4); // NOLINT (access to static member through instance)
     static_assert(decltype(b)::capacity() == 4);
     static_assert(b.size() == 2);
     static_assert(not b.empty());
@@ -39,7 +39,7 @@ TEST(StaticVectorTests, Iterating) {
     EXPECT_EQ(expected, actual);
 
     actual = 1;
-    for (auto it = std::cbegin(vector); it != std::cend(vector); ++it) {
+    for (auto it = std::cbegin(vector); it != std::cend(vector); ++it) { // NOLINT (not using range-based for loop)
         actual *= *it;
     }
     EXPECT_EQ(expected, actual);
