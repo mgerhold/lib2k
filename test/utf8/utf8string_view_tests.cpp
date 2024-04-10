@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
-#include <lib2k/utf8/literals.hpp>
-#include <lib2k/utf8/string.hpp>
-#include <lib2k/utf8/string_view.hpp>
+#include <lib2k/utf8.hpp>
 
 using c2k::Utf8StringView;
 using namespace c2k::Utf8Literals;
