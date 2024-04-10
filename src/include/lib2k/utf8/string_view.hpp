@@ -36,4 +36,8 @@ namespace c2k {
             };
         }
     };
+
+    namespace Utf8Literals {
+        [[nodiscard]] Utf8StringView operator""_utf8view(char const* str, std::size_t length);
+    }
 } // namespace c2k

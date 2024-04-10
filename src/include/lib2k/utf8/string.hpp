@@ -3,11 +3,16 @@
 #include "../concepts.hpp"
 #include "char.hpp"
 #include "const_iterator.hpp"
-#include "literals.hpp"
 #include <cstdint>
 #include <string>
 
 namespace c2k {
+    class Utf8String;
+
+    namespace Utf8Literals {
+        [[nodiscard]] Utf8String operator""_utf8(char const* str, std::size_t length);
+    }
+
     class Utf8String final {
         friend class Utf8StringView;
         friend Utf8String Utf8Literals::operator""_utf8(char const* str, std::size_t length);

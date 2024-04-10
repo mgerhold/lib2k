@@ -56,4 +56,8 @@ namespace c2k {
         }
     };
 
+    namespace Utf8Literals {
+        [[nodiscard]] Utf8Char operator""_utf8(char c);
+    };
+
 } // namespace c2k
