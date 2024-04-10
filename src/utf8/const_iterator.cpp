@@ -1,4 +1,6 @@
 #include <lib2k/utf8/const_iterator.hpp>
+#include <lib2k/utf8/string.hpp>
+#include <lib2k/utf8/string_view.hpp>
 #include <utf8proc.h>
 
 namespace c2k::detail {

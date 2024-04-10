@@ -9,6 +9,7 @@
 
 namespace c2k {
     class Utf8String final {
+        friend class Utf8StringView;
         friend Utf8String Utf8Literals::operator""_utf8(char const* str, std::size_t length);
 
     private:

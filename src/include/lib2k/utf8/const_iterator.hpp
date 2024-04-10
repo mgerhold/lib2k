@@ -7,10 +7,12 @@
 
 namespace c2k {
     class Utf8String;
+    class Utf8StringView;
 
     namespace detail {
         class Utf8ConstIterator final {
             friend class ::c2k::Utf8String;
+            friend class ::c2k::Utf8StringView;
 
         private:
             std::byte const* m_next_char_start{ nullptr };
