@@ -198,12 +198,22 @@ namespace c2k {
 
 
     [[nodiscard]] Utf8String::ConstIterator Utf8String::find(Utf8Char const needle, ConstIterator const& start) const {
-        for (auto it = start; it != cend(); ++it) {
-            if (*it == needle) {
-                return it;
-            }
+        auto const start_offset = reinterpret_cast<char const*>(start.m_next_char_start) - m_data.data();
+        auto const substring_data = std::string_view{ m_data }.substr(start_offset);
+        assert(not needle.m_codepoint.empty());
+        auto const needle_substring = std::string_view{
+            reinterpret_cast<char const*>(needle.m_codepoint.data()),
+            reinterpret_cast<char const*>(needle.m_codepoint.data() + needle.m_codepoint.size()),
+        };
+        auto const position = substring_data.find(needle_substring);
+        if (position == std::string_view::npos) {
+            return cend();
         }
-        return cend();
+        return ConstIterator{
+            reinterpret_cast<std::byte const*>(
+                    &*(substring_data.begin() + static_cast<std::string_view::difference_type>(position))
+            ),
+        };
     }
 
     // clang-format off
@@ -223,18 +233,18 @@ namespace c2k {
         Utf8String const& needle,
         ConstIterator const& start
     ) const { // clang-format on
-        for (auto it = start; it != cend(); ++it) {
-            auto other = needle.cbegin();
-            for (auto copy = it; copy != cend() and other != needle.cend(); ++copy, ++other) {
-                if (*copy != *other) {
-                    break;
-                }
-            }
-            if (other == needle.cend()) {
-                return it;
-            }
+        auto const start_offset = reinterpret_cast<char const*>(start.m_next_char_start) - m_data.data();
+        auto const substring_data = std::string_view{ m_data }.substr(start_offset);
+        auto const needle_string = std::string_view{ needle.m_data };
+        auto const position = substring_data.find(needle_string);
+        if (position == std::string_view::npos) {
+            return cend();
         }
-        return cend();
+        return ConstIterator{
+            reinterpret_cast<std::byte const*>(
+                    &*(substring_data.begin() + static_cast<std::string_view::difference_type>(position))
+            ),
+        };
     }
 
     // clang-format off
