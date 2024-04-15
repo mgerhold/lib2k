@@ -5,6 +5,7 @@
 #include "const_iterator.hpp"
 #include <cstdint>
 #include <string>
+#include <tl/expected.hpp>
 
 namespace c2k {
     class Utf8String;

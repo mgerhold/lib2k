@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <lib2k/utf8.hpp>
 
+using c2k::Utf8Char;
 using c2k::Utf8StringView;
 using namespace c2k::Utf8Literals;
 
@@ -32,5 +33,63 @@ TEST(Utf8StringViewTests, UserDefinedLiteral) {
     EXPECT_THROW(std::ignore = "\xE0\xA0\x41"_utf8view, c2k::InvalidUtf8String);
 }
 
+TEST(Utf8StringViewTests, NumChars) {
+    EXPECT_EQ("abc"_utf8view.calculate_char_count(), 3);
+    EXPECT_EQ("a🦀c"_utf8view.calculate_char_count(), 3);
+    EXPECT_EQ(""_utf8view.calculate_char_count(), 0);
+    EXPECT_EQ("🦀🌍😊"_utf8view.calculate_char_count(), 3);
+    EXPECT_EQ("Hello, 🌍!"_utf8view.calculate_char_count(), 9);
+    EXPECT_EQ("C++ Programming 🚀"_utf8view.calculate_char_count(), 17);
+}
+
+TEST(Utf8StringViewTests, CharWidth) {
+    EXPECT_EQ("abc"_utf8view.calculate_char_width(), 3);
+    EXPECT_EQ(""_utf8view.calculate_char_width(), 0);
+    EXPECT_EQ("a🦀c"_utf8view.calculate_char_width(), 4);
+    EXPECT_EQ("🦀🌍😊"_utf8view.calculate_char_width(), 6);
+    EXPECT_EQ("C++ Programming 🚀"_utf8view.calculate_char_width(), 18);
+}
+
+TEST(Utf8StringViewTests, Iterating) {
+    auto const utf8_string_view = "Hello, 🌍!"_utf8view;
+    auto iterator = utf8_string_view.begin();
+    EXPECT_EQ(*iterator, 'H'_utf8);
+    ++iterator;
+    EXPECT_EQ(*iterator, 'e'_utf8);
+    ++iterator;
+    EXPECT_EQ(*iterator, 'l'_utf8);
+    ++iterator;
+    EXPECT_EQ(*iterator, 'l'_utf8);
+    ++iterator;
+    EXPECT_EQ(*iterator, 'o'_utf8);
+    ++iterator;
+    EXPECT_EQ(*iterator, ','_utf8);
+    ++iterator;
+    EXPECT_EQ(*iterator, ' '_utf8);
+    ++iterator;
+    EXPECT_EQ(
+            *iterator,
+            Utf8Char::from_bytes(std::array{
+                    std::byte{ static_cast<unsigned char>('\xf0') },
+                    std::byte{ static_cast<unsigned char>('\x9f') },
+                    std::byte{ static_cast<unsigned char>('\x8c') },
+                    std::byte{ static_cast<unsigned char>('\x8d') },
+            }) // == 🌍
+    );
+    ++iterator;
+    EXPECT_EQ(*iterator, '!'_utf8);
+    EXPECT_EQ(utf8_string_view.calculate_char_count(), 9);
+
+    auto stream = std::ostringstream{};
+    for (auto const c : utf8_string_view) {
+        stream << c << '\n';
+    }
+    EXPECT_EQ(stream.str(), "H\ne\nl\nl\no\n,\n \n🌍\n!\n");
+}
+
+TEST(Utf8StringViewTests, IsEmpty) {
+    EXPECT_TRUE(""_utf8view.is_empty());
+    EXPECT_FALSE("!"_utf8view.is_empty());
+}
 // todo: check what happens if you try to iterate over empty strings or string_views
 // todo: also check iterators for non null-terminated strings (when using views)

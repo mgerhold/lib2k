@@ -1,5 +1,6 @@
 #pragma once
 
+#include "const_iterator.hpp"
 #include <string_view>
 
 namespace c2k {
@@ -22,9 +23,15 @@ namespace c2k {
 
         [[nodiscard]] static Utf8StringView from_string_view_unchecked(std::string_view view);
 
-        [[nodiscard]] constexpr bool empty() const {
+        [[nodiscard]] constexpr bool is_empty() const {
             return m_view.empty();
         }
+
+        [[nodiscard]] std::size_t calculate_char_count() const {
+            return static_cast<std::size_t>(cend() - cbegin());
+        }
+
+        [[nodiscard]] std::size_t calculate_char_width() const;
 
         [[nodiscard]] constexpr bool operator==(Utf8StringView const other) const {
             return m_view == other.m_view;
@@ -32,8 +39,20 @@ namespace c2k {
 
         [[nodiscard]] detail::Utf8ConstIterator begin() const {
             return detail::Utf8ConstIterator{
-                static_cast<std::byte const*>(static_cast<void const*>(&m_view.front())),
+                reinterpret_cast<std::byte const*>(m_view.data()),
             };
+        }
+
+        [[nodiscard]] detail::Utf8ConstIterator cbegin() const {
+            return begin();
+        }
+
+        [[nodiscard]] detail::Utf8ConstIterator end() const {
+            return detail::Utf8ConstIterator{ reinterpret_cast<std::byte const*>(m_view.data() + m_view.length()) };
+        }
+
+        [[nodiscard]] detail::Utf8ConstIterator cend() const {
+            return end();
         }
     };
 

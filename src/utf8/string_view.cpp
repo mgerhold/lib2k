@@ -1,5 +1,6 @@
 #include <lib2k/utf8/string.hpp>
 #include <lib2k/utf8/string_view.hpp>
+#include <utf8proc.h>
 
 namespace c2k {
 
@@ -22,6 +23,32 @@ namespace c2k {
         auto result = Utf8StringView{};
         result.m_view = view;
         return result;
+    }
+
+    [[nodiscard]] std::size_t Utf8StringView::calculate_char_width() const {
+        auto width = std::size_t{ 0 };
+        auto current = reinterpret_cast<utf8proc_uint8_t const*>(m_view.data());
+
+        while (current < reinterpret_cast<utf8proc_uint8_t const*>(m_view.data() + m_view.length())) {
+            auto codepoint = utf8proc_int32_t{};
+            auto const bytes_read = utf8proc_iterate(current, -1, &codepoint);
+            // clang-format off
+            assert(
+                codepoint != -1
+                and utf8proc_codepoint_valid(codepoint)
+                and "Utf8String objects must always contain valid UTF8"
+            );
+            // clang-format on
+            width += static_cast<std::size_t>(utf8proc_charwidth(codepoint));
+            current += bytes_read;
+        }
+        // clang-format off
+        assert(
+            current == reinterpret_cast<utf8proc_uint8_t const*>(m_view.data() + m_view.length())
+            and "Utf8String objects must always contain valid UTF8"
+        );
+        // clang-format on
+        return width;
     }
 
 } // namespace c2k
