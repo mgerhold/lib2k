@@ -9,7 +9,12 @@
 
 namespace c2k {
 
+    namespace detail {
+        class Utf8ConstIterator;
+    }
+
     class Utf8Char final {
+        friend class detail::Utf8ConstIterator;
         friend class Utf8String;
 
     private:
@@ -49,6 +54,10 @@ namespace c2k {
             }
             return os;
         }
+    };
+
+    namespace Utf8Literals {
+        [[nodiscard]] Utf8Char operator""_utf8(char c);
     };
 
 } // namespace c2k

@@ -2,52 +2,33 @@
 
 #include "../concepts.hpp"
 #include "char.hpp"
-#include "literals.hpp"
+#include "const_iterator.hpp"
 #include <cstdint>
 #include <string>
+#include <tl/expected.hpp>
 
 namespace c2k {
+    class Utf8String;
+
+    namespace Utf8Literals {
+        [[nodiscard]] Utf8String operator""_utf8(char const* str, std::size_t length);
+    }
+
     class Utf8String final {
+        friend class Utf8StringView;
         friend Utf8String Utf8Literals::operator""_utf8(char const* str, std::size_t length);
 
     private:
         std::string m_data;
 
     public:
-        class ConstIterator {
-            friend class Utf8String;
+        using ConstIterator = detail::Utf8ConstIterator;
 
-        private:
-            std::byte const* m_next_char_start{ nullptr };
-            std::uint8_t m_next_char_num_bytes{ 0 };
-            // To make it impossible to assign into the dereferenced iterator, we hold the next Utf8Char instance
-            // to return in a member. This allows us to return a const& and thus prohibit assignment.
-            Utf8Char m_next;
-
-            explicit ConstIterator(std::byte const* start);
-
-        public:
-            using difference_type = std::ptrdiff_t;
-            using value_type = Utf8Char;
-
-            constexpr ConstIterator() = default;
-
-            [[nodiscard]] Utf8Char const& operator*() const;
-            [[nodiscard]] Utf8Char const* operator->() const;
-            ConstIterator& operator++();
-            ConstIterator operator++(int);
-            [[nodiscard]] ConstIterator operator+(difference_type offset) const;
-            [[nodiscard]] difference_type operator-(ConstIterator const& other) const;
-            [[nodiscard]] bool operator==(ConstIterator const& other) const;
-        };
-
-        [[nodiscard]] static Utf8String from_string_unchecked(std::string data);
-
-    public:
         Utf8String() = default;
         Utf8String(std::string string);      // NOLINT (implicit converting constructor)
         Utf8String(char const* const string) // NOLINT (implicit converting constructor)
             : Utf8String{ std::string{ string } } { }
+        [[nodiscard]] static Utf8String from_string_unchecked(std::string data);
         [[nodiscard]] static tl::expected<Utf8String, Utf8Error> from_chars(std::string chars);
         [[nodiscard]] static bool is_valid_utf8(std::string_view string);
 
@@ -136,14 +117,4 @@ namespace c2k {
             return os << string.m_data;
         }
     };
-
-    /* These asserts must not appear within the Utf8String class since some compilers
-     * will consider ConstIterator to be incomplete there. According to an answer on
-     * StackOverflow (see https://stackoverflow.com/a/75815361/7540548), this is an open
-     * defect in the standard and would be undefined behavior.
-     * By moving the asserts out of the enclosing class, we can ensure that the inner
-     * class is complete and the following asserts do not expose undefined behavior. */
-    static_assert(std::input_or_output_iterator<Utf8String::ConstIterator>);
-    static_assert(std::input_iterator<Utf8String::ConstIterator>);
-    static_assert(std::forward_iterator<Utf8String::ConstIterator>);
 } // namespace c2k

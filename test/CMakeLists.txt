@@ -19,4 +19,13 @@ add_test_executable(synchronized_tests)
 add_test_executable(non_null_owner_tests)
 add_test_executable(unique_value_tests)
 add_test_executable(static_vector_tests)
-add_test_executable(utf8_tests)
+
+add_executable(utf8_tests
+        utf8/utf8char_tests.cpp
+        utf8/utf8string_tests.cpp
+        utf8/utf8string_view_tests.cpp
+)
+
+target_link_libraries(utf8_tests PRIVATE lib2k lib2k_options)
+target_link_system_libraries(utf8_tests PRIVATE GTest::gtest GTest::gtest_main)
+gtest_discover_tests(utf8_tests)
