@@ -15,6 +15,7 @@ namespace c2k {
         std::string_view m_view;
 
     public:
+        using ConstIterator = detail::Utf8ConstIterator;
         constexpr Utf8StringView() = default;
         Utf8StringView(Utf8String const& string); // NOLINT (implicit converting constructor)
         Utf8StringView(detail::Utf8ConstIterator const& begin, detail::Utf8ConstIterator const& end);
@@ -38,9 +39,7 @@ namespace c2k {
         }
 
         [[nodiscard]] detail::Utf8ConstIterator begin() const {
-            return detail::Utf8ConstIterator{
-                reinterpret_cast<std::byte const*>(m_view.data()),
-            };
+            return detail::Utf8ConstIterator{ reinterpret_cast<std::byte const*>(m_view.data()) };
         }
 
         [[nodiscard]] detail::Utf8ConstIterator cbegin() const {
@@ -48,7 +47,9 @@ namespace c2k {
         }
 
         [[nodiscard]] detail::Utf8ConstIterator end() const {
-            return detail::Utf8ConstIterator{ reinterpret_cast<std::byte const*>(m_view.data() + m_view.length()) };
+            return detail::Utf8ConstIterator{
+                reinterpret_cast<std::byte const*>(m_view.data() + m_view.length()),
+            };
         }
 
         [[nodiscard]] detail::Utf8ConstIterator cend() const {

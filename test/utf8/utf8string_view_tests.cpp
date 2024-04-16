@@ -2,6 +2,7 @@
 #include <lib2k/utf8.hpp>
 
 using c2k::Utf8Char;
+using c2k::Utf8String;
 using c2k::Utf8StringView;
 using namespace c2k::Utf8Literals;
 
