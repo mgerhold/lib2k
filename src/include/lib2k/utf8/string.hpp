@@ -45,9 +45,7 @@ namespace c2k {
         [[nodiscard]] bool operator==(Utf8String const& other) const;
 
         [[nodiscard]] ConstIterator begin() const {
-            return ConstIterator{
-                static_cast<std::byte const*>(static_cast<void const*>(m_data.data())),
-            };
+            return ConstIterator{ reinterpret_cast<std::byte const*>(m_data.data()) };
         }
 
         [[nodiscard]] ConstIterator cbegin() const {
@@ -55,9 +53,7 @@ namespace c2k {
         }
 
         [[nodiscard]] ConstIterator end() const {
-            return ConstIterator{
-                static_cast<std::byte const*>(static_cast<void const*>(m_data.data() + m_data.size())),
-            };
+            return ConstIterator{ reinterpret_cast<std::byte const*>(m_data.data() + m_data.size()) };
         }
 
         [[nodiscard]] ConstIterator cend() const {
