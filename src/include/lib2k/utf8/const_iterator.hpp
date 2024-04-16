@@ -33,6 +33,8 @@ namespace c2k {
             [[nodiscard]] Utf8Char const* operator->() const;
             Utf8ConstIterator& operator++();
             Utf8ConstIterator operator++(int);
+            Utf8ConstIterator& operator--();
+            Utf8ConstIterator operator--(int);
             [[nodiscard]] Utf8ConstIterator operator+(difference_type offset) const;
             [[nodiscard]] difference_type operator-(Utf8ConstIterator const& other) const;
             [[nodiscard]] bool operator==(Utf8ConstIterator const& other) const;
@@ -41,5 +43,6 @@ namespace c2k {
         static_assert(std::input_or_output_iterator<Utf8ConstIterator>);
         static_assert(std::input_iterator<Utf8ConstIterator>);
         static_assert(std::forward_iterator<Utf8ConstIterator>);
+        static_assert(std::bidirectional_iterator<Utf8ConstIterator>);
     } // namespace detail
 } // namespace c2k

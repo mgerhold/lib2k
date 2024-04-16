@@ -58,6 +58,33 @@ namespace c2k::detail {
         return result;
     }
 
+    Utf8ConstIterator& Utf8ConstIterator::operator--() {
+        static constexpr auto is_continuation_byte = [](char const byte) {
+            // see (for example): https://stackoverflow.com/a/49701599/7540548
+            return (byte & 0b1100'0000) == 0b1000'0000;
+        };
+        auto pointer = reinterpret_cast<char const*>(m_next_char_start);
+        auto num_bytes = std::size_t{ 0 };
+        do {
+            --pointer;
+            ++num_bytes;
+        } while (is_continuation_byte(*pointer));
+        m_next_char_start = reinterpret_cast<std::byte const*>(pointer);
+        m_next_char_num_bytes = num_bytes;
+        auto codepoint = Utf8Char::Codepoint{};
+        for (auto i = std::size_t{ 0 }; i < num_bytes; ++i) {
+            codepoint.push_back(*(m_next_char_start + i));
+        }
+        m_next = Utf8Char{ codepoint };
+        return *this;
+    }
+
+    Utf8ConstIterator Utf8ConstIterator::operator--(int) {
+        auto const result = *this;
+        --(*this);
+        return result;
+    }
+
     [[nodiscard]] Utf8ConstIterator Utf8ConstIterator::operator+(difference_type const offset) const {
         if (offset < 0) {
             throw std::invalid_argument{ "cannot add negative value to Utf8String::ConstIterator" };
