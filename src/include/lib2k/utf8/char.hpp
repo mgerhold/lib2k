@@ -28,6 +28,13 @@ namespace c2k {
         constexpr Utf8Char() : m_codepoint{ std::byte{ 0 } } { }
 
         Utf8Char(char c); // NOLINT (implicit converting constructor)
+        Utf8Char(Utf8Char const&) = default;
+        Utf8Char(Utf8Char&&) = default;
+        Utf8Char& operator=(Utf8Char const&) & = default;
+        Utf8Char& operator=(Utf8Char const&) && = delete;
+        Utf8Char& operator=(Utf8Char&&) & = default;
+        Utf8Char& operator=(Utf8Char&&) && = delete;
+        ~Utf8Char() noexcept = default;
 
         [[nodiscard]] static constexpr Utf8Char from_bytes_unchecked(std::span<std::byte const> const bytes) {
             assert(not bytes.empty());
