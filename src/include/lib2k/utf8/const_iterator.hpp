@@ -17,8 +17,8 @@ namespace c2k {
         private:
             std::byte const* m_next_char_start{ nullptr };
             std::uint8_t m_next_char_num_bytes{ 0 };
-            // To make it impossible to assign into the dereferenced iterator, we hold the next Utf8Char instance
-            // to return in a member. This allows us to return a const& and thus prohibit assignment.
+            // We have to keep a copy of the Utf8Char around to make operator->() work. Otherwise, we'd not
+            // have an address that we could return there.
             Utf8Char m_next;
 
             explicit Utf8ConstIterator(std::byte const* start);
