@@ -3,11 +3,15 @@
 #include "../concepts.hpp"
 #include "char.hpp"
 #include "const_iterator.hpp"
+#include "const_reverse_iterator.hpp"
 #include <cstdint>
 #include <string>
 #include <tl/expected.hpp>
 
 namespace c2k {
+    namespace detail {
+        class Utf8ConstReverseIterator;
+    }
     class Utf8String;
 
     namespace Utf8Literals {
@@ -23,6 +27,7 @@ namespace c2k {
 
     public:
         using ConstIterator = detail::Utf8ConstIterator;
+        using ReverseIterator = detail::Utf8ConstReverseIterator;
 
         Utf8String() = default;
         Utf8String(std::string string);      // NOLINT (implicit converting constructor)
@@ -58,6 +63,28 @@ namespace c2k {
 
         [[nodiscard]] ConstIterator cend() const {
             return end();
+        }
+
+        [[nodiscard]] ReverseIterator rbegin() const {
+            return ReverseIterator{
+                reinterpret_cast<std::byte const*>(m_data.data()),
+                reinterpret_cast<std::byte const*>(m_data.data() + m_data.size()),
+            };
+        }
+
+        [[nodiscard]] ReverseIterator crbegin() const {
+            return rbegin();
+        }
+
+        [[nodiscard]] ReverseIterator rend() const {
+            return ReverseIterator{
+                reinterpret_cast<std::byte const*>(m_data.data()),
+                reinterpret_cast<std::byte const*>(m_data.data()),
+            };
+        }
+
+        [[nodiscard]] ReverseIterator crend() const {
+            return rend();
         }
 
         void append(Utf8Char c);

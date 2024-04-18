@@ -21,6 +21,15 @@ namespace c2k::detail {
         m_next = Utf8Char{ codepoint };
     }
 
+    Utf8ConstIterator::Utf8ConstIterator(
+            std::byte const* const next_char_start,
+            std::uint8_t const next_char_num_bytes,
+            Utf8Char const next
+    )
+        : m_next_char_start{ next_char_start },
+          m_next_char_num_bytes{ next_char_num_bytes },
+          m_next{ next } { }
+
     [[nodiscard]] Utf8Char const& Utf8ConstIterator::operator*() const {
         return m_next;
     }
@@ -105,9 +114,5 @@ namespace c2k::detail {
             ++distance;
         }
         return distance;
-    }
-
-    [[nodiscard]] bool Utf8ConstIterator::operator==(Utf8ConstIterator const& other) const {
-        return m_next_char_start == other.m_next_char_start and m_next_char_num_bytes == other.m_next_char_num_bytes;
     }
 } // namespace c2k::detail
