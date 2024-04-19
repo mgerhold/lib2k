@@ -87,6 +87,13 @@ TEST(Utf8StringViewTests, Iterating) {
         stream << c << '\n';
     }
     EXPECT_EQ(stream.str(), "H\ne\nl\nl\no\n,\n \n🌍\n!\n");
+
+    auto const empty = ""_utf8view;
+    auto counter = std::size_t{ 0 };
+    for ([[maybe_unused]] auto const& c : empty) {
+        ++counter;
+    }
+    EXPECT_EQ(counter, 0);
 }
 
 TEST(Utf8StringViewTests, IteratingBackwards) {
@@ -224,5 +231,14 @@ TEST(Utf8StringViewTests, FrontAndBack) {
     EXPECT_EQ(string.back(), *"🐀"_utf8view.cbegin());
 }
 
-// todo: check what happens if you try to iterate over empty strings or string_views
-// todo: also check iterators for non null-terminated strings (when using views)
+TEST(Utf8StringViewTests, NonNullTerminatedStringView) {
+    auto const string = "The quick brown 🦊 jumps over the lazy 🐶."_utf8;
+    auto const sub_view = Utf8StringView{ string }.substring(10, 7);
+    EXPECT_EQ(sub_view, "brown 🦊"_utf8view);
+    auto count = std::size_t{ 0 };
+    for ([[maybe_unused]] auto const& c : sub_view) {
+        ++count;
+    }
+    EXPECT_EQ(count, 7);
+    EXPECT_NE(*sub_view.cend(), '\0'); // this string view is not null-terminated
+}
