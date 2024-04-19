@@ -379,3 +379,15 @@ TEST(Utf8StringTests, Substring) {
     sub = string.substring(10);
     EXPECT_EQ(sub, "brown 🦊 jumps over the lazy 🐶."_utf8view);
 }
+
+TEST(Utf8StringTests, FrontAndBack) {
+    auto string = ""_utf8;
+    EXPECT_THROW(std::ignore = string.front(), std::out_of_range);
+    EXPECT_THROW(std::ignore = string.back(), std::out_of_range);
+    string = "!";
+    EXPECT_EQ(string.front(), '!');
+    EXPECT_EQ(string.back(), '!');
+    string = "C++ 🐀";
+    EXPECT_EQ(string.front(), 'C');
+    EXPECT_EQ(string.back(), *"🐀"_utf8view.cbegin());
+}

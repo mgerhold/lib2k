@@ -90,6 +90,20 @@ namespace c2k {
         return m_data == other.m_data;
     }
 
+    [[nodiscard]] Utf8Char Utf8String::front() const {
+        if (is_empty()) {
+            throw std::out_of_range{ "cannot call front() on empty string" };
+        }
+        return *cbegin();
+    }
+
+    [[nodiscard]] Utf8Char Utf8String::back() const {
+        if (is_empty()) {
+            throw std::out_of_range{ "cannot call back() on empty string" };
+        }
+        return *(cend() - 1);
+    }
+
     void Utf8String::append(Utf8Char const c) {
         for (auto const byte : c.m_codepoint) {
             m_data.push_back(static_cast<char>(byte));

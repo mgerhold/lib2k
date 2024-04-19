@@ -47,6 +47,9 @@ namespace c2k {
             return m_view == other.m_view;
         }
 
+        [[nodiscard]] Utf8Char front() const;
+        [[nodiscard]] Utf8Char back() const;
+
         [[nodiscard]] detail::Utf8ConstIterator begin() const {
             return detail::Utf8ConstIterator{ reinterpret_cast<std::byte const*>(m_view.data()) };
         }
