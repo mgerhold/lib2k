@@ -94,6 +94,13 @@ TEST(Utf8StringTests, Iterating) {
         stream << c << '\n';
     }
     EXPECT_EQ(stream.str(), "H\ne\nl\nl\no\n,\n \n🌍\n!\n");
+
+    auto const empty = ""_utf8;
+    auto counter = std::size_t{ 0 };
+    for ([[maybe_unused]] auto const& c : empty) {
+        ++counter;
+    }
+    EXPECT_EQ(counter, 0);
 }
 
 TEST(Utf8StringTests, IteratingBackwards) {
