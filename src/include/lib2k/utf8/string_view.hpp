@@ -1,6 +1,7 @@
 #pragma once
 
 #include "const_iterator.hpp"
+#include "const_reverse_iterator.hpp"
 #include <string_view>
 
 namespace c2k {
@@ -16,6 +17,8 @@ namespace c2k {
 
     public:
         using ConstIterator = detail::Utf8ConstIterator;
+        using ReverseIterator = detail::Utf8ConstReverseIterator;
+
         constexpr Utf8StringView() = default;
         Utf8StringView(Utf8String const& string); // NOLINT (implicit converting constructor)
         Utf8StringView(detail::Utf8ConstIterator const& begin, detail::Utf8ConstIterator const& end);
@@ -54,6 +57,28 @@ namespace c2k {
 
         [[nodiscard]] detail::Utf8ConstIterator cend() const {
             return end();
+        }
+
+        [[nodiscard]] ReverseIterator rbegin() const {
+            return ReverseIterator{
+                reinterpret_cast<std::byte const*>(m_view.data()),
+                reinterpret_cast<std::byte const*>(m_view.data() + m_view.size()),
+            };
+        }
+
+        [[nodiscard]] ReverseIterator crbegin() const {
+            return rbegin();
+        }
+
+        [[nodiscard]] ReverseIterator rend() const {
+            return ReverseIterator{
+                reinterpret_cast<std::byte const*>(m_view.data()),
+                reinterpret_cast<std::byte const*>(m_view.data()),
+            };
+        }
+
+        [[nodiscard]] ReverseIterator crend() const {
+            return rend();
         }
     };
 

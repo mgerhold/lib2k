@@ -88,6 +88,97 @@ TEST(Utf8StringViewTests, Iterating) {
     EXPECT_EQ(stream.str(), "H\ne\nl\nl\no\n,\n \n🌍\n!\n");
 }
 
+TEST(Utf8StringViewTests, IteratingBackwards) {
+    auto const utf8_string_view = "Hello, 🌍!"_utf8view;
+    auto iterator = utf8_string_view.end();
+    --iterator;
+    EXPECT_EQ(*iterator, '!'_utf8);
+    --iterator;
+    EXPECT_EQ(
+            *iterator,
+            Utf8Char::from_bytes(std::array{
+                    std::byte{ static_cast<unsigned char>('\xf0') },
+                    std::byte{ static_cast<unsigned char>('\x9f') },
+                    std::byte{ static_cast<unsigned char>('\x8c') },
+                    std::byte{ static_cast<unsigned char>('\x8d') },
+            }) // == 🌍
+    );
+    --iterator;
+    EXPECT_EQ(*iterator, ' '_utf8);
+    --iterator;
+    EXPECT_EQ(*iterator, ','_utf8);
+    --iterator;
+    EXPECT_EQ(*iterator, 'o'_utf8);
+    --iterator;
+    EXPECT_EQ(*iterator, 'l'_utf8);
+    --iterator;
+    EXPECT_EQ(*iterator, 'l'_utf8);
+    --iterator;
+    EXPECT_EQ(*iterator, 'e'_utf8);
+    --iterator;
+    EXPECT_EQ(*iterator, 'H'_utf8);
+    EXPECT_EQ(iterator, utf8_string_view.cbegin());
+
+    auto reverse_iterator = utf8_string_view.crbegin();
+    EXPECT_EQ(*reverse_iterator, *(--utf8_string_view.end()));
+    EXPECT_NE(reverse_iterator, utf8_string_view.crend());
+    ++reverse_iterator;
+    EXPECT_EQ(
+            *reverse_iterator,
+            Utf8Char::from_bytes(std::array{
+                    std::byte{ static_cast<unsigned char>('\xf0') },
+                    std::byte{ static_cast<unsigned char>('\x9f') },
+                    std::byte{ static_cast<unsigned char>('\x8c') },
+                    std::byte{ static_cast<unsigned char>('\x8d') },
+            }) // == 🌍
+    );
+    EXPECT_NE(reverse_iterator, utf8_string_view.crend());
+    ++reverse_iterator;
+    EXPECT_EQ(*reverse_iterator, ' '_utf8);
+    EXPECT_NE(reverse_iterator, utf8_string_view.crend());
+    ++reverse_iterator;
+    EXPECT_EQ(*reverse_iterator, ','_utf8);
+    EXPECT_NE(reverse_iterator, utf8_string_view.crend());
+    ++reverse_iterator;
+    EXPECT_EQ(*reverse_iterator, 'o'_utf8);
+    EXPECT_NE(reverse_iterator, utf8_string_view.crend());
+    ++reverse_iterator;
+    EXPECT_EQ(*reverse_iterator, 'l'_utf8);
+    EXPECT_NE(reverse_iterator, utf8_string_view.crend());
+    ++reverse_iterator;
+    EXPECT_EQ(*reverse_iterator, 'l'_utf8);
+    EXPECT_NE(reverse_iterator, utf8_string_view.crend());
+    ++reverse_iterator;
+    EXPECT_EQ(*reverse_iterator, 'e'_utf8);
+    EXPECT_NE(reverse_iterator, utf8_string_view.crend());
+    ++reverse_iterator;
+    EXPECT_EQ(*reverse_iterator, 'H'_utf8);
+    EXPECT_NE(reverse_iterator, utf8_string_view.crend());
+    ++reverse_iterator;
+    EXPECT_EQ(reverse_iterator, utf8_string_view.crend());
+
+    auto reversed = Utf8String{};
+    for (auto it = utf8_string_view.rbegin(); it != utf8_string_view.rend(); ++it) {
+        reversed += *it;
+    }
+    EXPECT_EQ(reversed, "!🌍 ,olleH");
+
+    auto back_and_forth = Utf8String{};
+    auto it = utf8_string_view.crbegin();
+    for (; it != utf8_string_view.crend(); ++it) {
+        back_and_forth += *it;
+    }
+    --it;
+    while (true) {
+        back_and_forth += *it;
+        if (it == utf8_string_view.crbegin()) {
+            break;
+        }
+        --it;
+    }
+    EXPECT_EQ(back_and_forth, "!🌍 ,olleHHello, 🌍!");
+}
+
 TEST(Utf8StringViewTests, IsEmpty) {
     EXPECT_TRUE(""_utf8view.is_empty());
     EXPECT_FALSE("!"_utf8view.is_empty());
