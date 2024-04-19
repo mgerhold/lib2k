@@ -32,6 +32,22 @@ namespace c2k::detail {
         return *this;
     }
 
+    Utf8ConstReverseIterator& Utf8ConstReverseIterator::operator+=(difference_type const offset) {
+        if (offset == 0) {
+            return *this;
+        }
+        if (offset > 0) {
+            for (auto i = difference_type{ 0 }; i < offset; ++i) {
+                ++(*this);
+            }
+            return *this;
+        }
+        for (auto i = difference_type{ 0 }; i < -offset; ++i) {
+            --(*this);
+        }
+        return *this;
+    }
+
     Utf8ConstReverseIterator& Utf8ConstReverseIterator::operator--() {
         if (m_is_sentinel) {
             auto const begin = Utf8ConstIterator{ m_string_start };
@@ -47,5 +63,14 @@ namespace c2k::detail {
         m_current_char_num_bytes = it.m_next_char_num_bytes;
         m_current = *it;
         return *this;
+    }
+
+    // clang-format off
+    [[nodiscard]] Utf8ConstReverseIterator::difference_type Utf8ConstReverseIterator::operator-(
+        Utf8ConstReverseIterator const& other
+    ) const { // clang-format on
+        auto result = difference_type{ 0 };
+        for (auto copy = other; copy != *this; ++copy, ++result) { }
+        return result;
     }
 } // namespace c2k::detail

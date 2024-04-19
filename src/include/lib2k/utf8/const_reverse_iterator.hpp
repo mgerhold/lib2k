@@ -41,12 +41,38 @@ namespace c2k::detail {
             return result;
         }
 
+        Utf8ConstReverseIterator& operator+=(difference_type offset);
+
+        [[nodiscard]] Utf8ConstReverseIterator operator+(difference_type const offset) const {
+            auto copy = *this;
+            copy += offset;
+            return copy;
+        }
+
+        // clang-format off
+        [[nodiscard]] friend Utf8ConstReverseIterator operator+(
+            difference_type const offset,
+            Utf8ConstReverseIterator const& iterator
+        ) { // clang-format on
+            return iterator + offset;
+        }
+
         Utf8ConstReverseIterator& operator--();
+
+        Utf8ConstReverseIterator& operator-=(difference_type const offset) {
+            return (*this) += -offset;
+        }
 
         [[nodiscard]] Utf8ConstReverseIterator operator--(int) {
             auto const result = *this;
             --(*this);
             return result;
+        }
+
+        [[nodiscard]] difference_type operator-(Utf8ConstReverseIterator const& other) const;
+
+        [[nodiscard]] Utf8ConstReverseIterator operator-(difference_type const offset) const {
+            return *this + (-offset);
         }
 
         [[nodiscard]] constexpr bool operator==(Utf8ConstReverseIterator const& other) const {
