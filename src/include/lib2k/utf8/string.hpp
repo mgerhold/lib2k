@@ -57,6 +57,9 @@ namespace c2k {
 
         [[nodiscard]] bool operator==(Utf8String const& other) const;
 
+        [[nodiscard]] Utf8Char front() const;
+        [[nodiscard]] Utf8Char back() const;
+
         [[nodiscard]] ConstIterator begin() const {
             return ConstIterator{ reinterpret_cast<std::byte const*>(m_data.data()) };
         }

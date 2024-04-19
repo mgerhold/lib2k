@@ -212,5 +212,17 @@ TEST(Utf8StringViewTests, Substring) {
     EXPECT_EQ(sub, "brown 🦊 jumps over the lazy 🐶."_utf8view);
 }
 
+TEST(Utf8StringViewTests, FrontAndBack) {
+    auto string = ""_utf8view;
+    EXPECT_THROW(std::ignore = string.front(), std::out_of_range);
+    EXPECT_THROW(std::ignore = string.back(), std::out_of_range);
+    string = "!";
+    EXPECT_EQ(string.front(), '!');
+    EXPECT_EQ(string.back(), '!');
+    string = "C++ 🐀";
+    EXPECT_EQ(string.front(), 'C');
+    EXPECT_EQ(string.back(), *"🐀"_utf8view.cbegin());
+}
+
 // todo: check what happens if you try to iterate over empty strings or string_views
 // todo: also check iterators for non null-terminated strings (when using views)

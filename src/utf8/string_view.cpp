@@ -77,4 +77,18 @@ namespace c2k {
         auto const begin = this->cbegin() + static_cast<ConstIterator::difference_type>(start);
         return substring(begin, this->cend());
     }
+
+    [[nodiscard]] Utf8Char Utf8StringView::front() const {
+        if (is_empty()) {
+            throw std::out_of_range{ "cannot call front() on empty string view" };
+        }
+        return *cbegin();
+    }
+
+    [[nodiscard]] Utf8Char Utf8StringView::back() const {
+        if (is_empty()) {
+            throw std::out_of_range{ "cannot call back() on empty string view" };
+        }
+        return *(cend() - 1);
+    }
 } // namespace c2k
