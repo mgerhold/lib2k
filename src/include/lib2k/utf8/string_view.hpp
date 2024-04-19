@@ -58,6 +58,28 @@ namespace c2k {
         [[nodiscard]] detail::Utf8ConstIterator cend() const {
             return end();
         }
+
+        [[nodiscard]] ReverseIterator rbegin() const {
+            return ReverseIterator{
+                reinterpret_cast<std::byte const*>(m_view.data()),
+                reinterpret_cast<std::byte const*>(m_view.data() + m_view.size()),
+            };
+        }
+
+        [[nodiscard]] ReverseIterator crbegin() const {
+            return rbegin();
+        }
+
+        [[nodiscard]] ReverseIterator rend() const {
+            return ReverseIterator{
+                reinterpret_cast<std::byte const*>(m_view.data()),
+                reinterpret_cast<std::byte const*>(m_view.data()),
+            };
+        }
+
+        [[nodiscard]] ReverseIterator crend() const {
+            return rend();
+        }
     };
 
     namespace Utf8Literals {
