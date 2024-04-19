@@ -17,6 +17,10 @@ namespace c2k::detail {
         m_current = *it;
     }
 
+    [[nodiscard]] Utf8ConstIterator Utf8ConstReverseIterator::base() const {
+        return Utf8ConstIterator{ m_current_char_start + m_current_char_num_bytes };
+    }
+
     Utf8ConstReverseIterator& Utf8ConstReverseIterator::operator++() {
         if (m_current_char_start == m_string_start) {
             m_is_sentinel = true;

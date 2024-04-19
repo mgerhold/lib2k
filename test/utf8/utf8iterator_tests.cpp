@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <gtest/gtest.h>
 #include <lib2k/utf8.hpp>
 
@@ -97,4 +98,14 @@ TEST(Utf8ConstReverseIteratorTests, DifferenceCalculation) {
     EXPECT_EQ(string.crend() - string.crbegin(), 9);
     string = "";
     EXPECT_EQ(string.crend() - string.crbegin(), 0);
+}
+
+TEST(Utf8ConstReverseIteratorTests, Base) {
+    auto const string = "The quick brown fox jumps over the lazy dog."_utf8view;
+    auto const find_iterator = std::find(string.crbegin(), string.crend(), 'o'_utf8);
+    EXPECT_NE(find_iterator, string.crend());
+    auto const forward_iterator = find_iterator.base();
+    EXPECT_EQ(*forward_iterator, 'g');
+    EXPECT_EQ(*(forward_iterator + 1), '.');
+    EXPECT_EQ(forward_iterator + 2, string.cend());
 }
