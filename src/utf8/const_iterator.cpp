@@ -6,11 +6,7 @@
 namespace c2k::detail {
     Utf8ConstIterator::Utf8ConstIterator(std::byte const* const start) : m_next_char_start{ start } {
         auto utf8proc_codepoint = utf8proc_int32_t{};
-        auto const result = utf8proc_iterate(
-                static_cast<utf8proc_uint8_t const*>(static_cast<void const*>(start)),
-                -1,
-                &utf8proc_codepoint
-        );
+        auto const result = utf8proc_iterate(reinterpret_cast<utf8proc_uint8_t const*>(start), -1, &utf8proc_codepoint);
         assert(result >= 0);
         m_next_char_num_bytes = static_cast<decltype(m_next_char_num_bytes)>(result);
 
@@ -44,11 +40,8 @@ namespace c2k::detail {
         }
         m_next_char_start += m_next_char_num_bytes;
         auto utf8proc_codepoint = utf8proc_int32_t{};
-        auto const result = utf8proc_iterate(
-                static_cast<utf8proc_uint8_t const*>(static_cast<void const*>(m_next_char_start)),
-                -1,
-                &utf8proc_codepoint
-        );
+        auto const result =
+                utf8proc_iterate(reinterpret_cast<utf8proc_uint8_t const*>(m_next_char_start), -1, &utf8proc_codepoint);
         assert(result >= 0);
         m_next_char_num_bytes = static_cast<decltype(m_next_char_num_bytes)>(result);
 
