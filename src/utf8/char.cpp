@@ -5,7 +5,7 @@ namespace c2k {
     [[nodiscard]] static utf8proc_int32_t to_utf8proc_codepoint(StaticVector<std::byte, 4> const codepoint) {
         auto utf8proc_codepoint = utf8proc_int32_t{};
         auto const result = utf8proc_iterate(
-                static_cast<utf8proc_uint8_t const*>(static_cast<void const*>(&codepoint.front())),
+                reinterpret_cast<utf8proc_uint8_t const*>(&codepoint.front()),
                 static_cast<utf8proc_ssize_t>(codepoint.size()),
                 &utf8proc_codepoint
         );
@@ -26,7 +26,7 @@ namespace c2k {
     Utf8Char::Utf8Char(char const c) {
         auto utf8proc_codepoint = utf8proc_int32_t{};
         auto const result = utf8proc_iterate(
-                static_cast<utf8proc_uint8_t const*>(static_cast<void const*>(&c)),
+                reinterpret_cast<utf8proc_uint8_t const*>(&c),
                 static_cast<utf8proc_ssize_t>(sizeof(c)),
                 &utf8proc_codepoint
         );
@@ -42,7 +42,7 @@ namespace c2k {
         }
         auto utf8proc_codepoint = utf8proc_int32_t{};
         auto const result = utf8proc_iterate(
-                static_cast<utf8proc_uint8_t const*>(static_cast<void const*>(bytes.data())),
+                reinterpret_cast<utf8proc_uint8_t const*>(bytes.data()),
                 static_cast<utf8proc_ssize_t>(bytes.size_bytes()),
                 &utf8proc_codepoint
         );

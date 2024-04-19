@@ -43,11 +43,8 @@ namespace c2k {
         while (current < end) {
             auto const bytes_remaining = static_cast<utf8proc_ssize_t>(end - current);
             auto codepoint = utf8proc_int32_t{};
-            auto const result = utf8proc_iterate(
-                    static_cast<utf8proc_uint8_t const*>(static_cast<void const*>(current)),
-                    bytes_remaining,
-                    &codepoint
-            );
+            auto const result =
+                    utf8proc_iterate(reinterpret_cast<utf8proc_uint8_t const*>(current), bytes_remaining, &codepoint);
             if (result < 0) {
                 return false;
             }
@@ -159,12 +156,10 @@ namespace c2k {
     }
 
     Utf8String::ConstIterator Utf8String::erase(ConstIterator const& first, ConstIterator const& last) {
-        auto const start_byte_offset = static_cast<std::size_t>(
-                static_cast<char const*>(static_cast<void const*>(first.m_next_char_start)) - m_data.data()
-        );
-        auto const end_byte_offset = static_cast<std::size_t>(
-                static_cast<char const*>(static_cast<void const*>(last.m_next_char_start)) - m_data.data()
-        );
+        auto const start_byte_offset =
+                static_cast<std::size_t>(reinterpret_cast<char const*>(first.m_next_char_start) - m_data.data());
+        auto const end_byte_offset =
+                static_cast<std::size_t>(reinterpret_cast<char const*>(last.m_next_char_start) - m_data.data());
 
         m_data.erase(start_byte_offset, end_byte_offset - start_byte_offset);
 

@@ -7,8 +7,8 @@ namespace c2k {
     Utf8StringView::Utf8StringView(Utf8String const& string) : m_view{ string.m_data } { }
 
     Utf8StringView::Utf8StringView(detail::Utf8ConstIterator const& begin, detail::Utf8ConstIterator const& end)
-        : m_view{ static_cast<char const*>(static_cast<void const*>(begin.m_next_char_start)),
-                  static_cast<char const*>(static_cast<void const*>(end.m_next_char_start)) } { }
+        : m_view{ reinterpret_cast<char const*>(begin.m_next_char_start),
+                  reinterpret_cast<char const*>(end.m_next_char_start) } { }
 
     Utf8StringView::Utf8StringView(std::string_view const view) {
         if (not Utf8String::is_valid_utf8(view)) {
