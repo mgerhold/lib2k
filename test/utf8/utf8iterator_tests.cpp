@@ -33,10 +33,11 @@ TEST(Utf8ConstIteratorTests, IncrementAndDecrement) {
 
 TEST(Utf8ConstIteratorTests, Equality) {
     using c2k::Utf8StringView;
+    using Difference = Utf8StringView::ConstIterator::difference_type;
     auto const string = "Hello, C++ and its mascot 🐀!"_utf8view;
     EXPECT_EQ(string.cbegin(), string.cbegin());
     EXPECT_NE(string.cbegin(), string.cbegin() + 1);
-    EXPECT_EQ(string.cbegin() + string.calculate_char_count(), string.cend());
+    EXPECT_EQ(string.cbegin() + static_cast<Difference>(string.calculate_char_count()), string.cend());
     EXPECT_NE(string.cbegin(), string.cend());
 }
 
@@ -80,10 +81,11 @@ TEST(Utf8ConstReverseIteratorTests, IncrementAndDecrement) {
 
 TEST(Utf8ConstReverseIteratorTests, Equality) {
     using c2k::Utf8StringView;
+    using Difference = Utf8StringView::ReverseIterator::difference_type;
     auto const string = "Hello, C++ and its mascot 🐀!"_utf8view;
     EXPECT_EQ(string.crbegin(), string.crbegin());
     EXPECT_NE(string.crbegin(), string.crbegin() + 1);
-    EXPECT_EQ(string.crbegin() + string.calculate_char_count(), string.crend());
+    EXPECT_EQ(string.crbegin() + static_cast<Difference>(string.calculate_char_count()), string.crend());
     EXPECT_NE(string.crbegin(), string.crend());
 }
 
