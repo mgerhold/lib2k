@@ -37,6 +37,12 @@ namespace c2k {
 
         [[nodiscard]] std::size_t calculate_char_width() const;
 
+        [[nodiscard]] Utf8StringView substring(ConstIterator begin, ConstIterator end) const;
+        [[nodiscard]] Utf8StringView substring(ConstIterator begin) const;
+        [[nodiscard]] Utf8StringView substring(ConstIterator begin, std::size_t num_chars) const;
+        [[nodiscard]] Utf8StringView substring(std::size_t start, std::size_t num_chars) const;
+        [[nodiscard]] Utf8StringView substring(std::size_t start) const;
+
         [[nodiscard]] constexpr bool operator==(Utf8StringView const other) const {
             return m_view == other.m_view;
         }

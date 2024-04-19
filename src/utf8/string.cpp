@@ -17,6 +17,12 @@ namespace c2k {
         return result;
     }
 
+    Utf8String::Utf8String(ConstIterator const& begin, ConstIterator const& end)
+        : m_data{
+              reinterpret_cast<char const*>(begin.m_next_char_start),
+              reinterpret_cast<char const*>(end.m_next_char_start),
+          } { }
+
     [[nodiscard]] Utf8String Utf8String::from_string_unchecked(std::string data) {
         auto result = Utf8String{};
         result.m_data = std::move(data);
@@ -57,6 +63,28 @@ namespace c2k {
         return Utf8StringView{ *this }.calculate_char_width();
     }
 
+    [[nodiscard]] Utf8String Utf8String::substring(ConstIterator const& begin, ConstIterator const& end) const {
+        return Utf8String{ begin, end };
+    }
+
+    [[nodiscard]] Utf8String Utf8String::substring(ConstIterator const& begin) const {
+        return substring(begin, this->cend());
+    }
+
+    [[nodiscard]] Utf8String Utf8String::substring(ConstIterator const& begin, std::size_t const num_chars) const {
+        return substring(begin, begin + static_cast<ConstIterator::difference_type>(num_chars));
+    }
+
+    [[nodiscard]] Utf8String Utf8String::substring(std::size_t const start, std::size_t const num_chars) const {
+        auto const begin = this->cbegin() + static_cast<ConstIterator::difference_type>(start);
+        auto const end = begin + static_cast<ConstIterator::difference_type>(num_chars);
+        return substring(begin, end);
+    }
+
+    [[nodiscard]] Utf8String Utf8String::substring(std::size_t const start) const {
+        auto const begin = this->cbegin() + static_cast<ConstIterator::difference_type>(start);
+        return substring(begin, this->cend());
+    }
 
     [[nodiscard]] bool Utf8String::operator==(Utf8String const& other) const {
         return m_data == other.m_data;

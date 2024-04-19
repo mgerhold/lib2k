@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <gtest/gtest.h>
 #include <lib2k/utf8.hpp>
 
@@ -350,4 +351,31 @@ TEST(Utf8StringTests, OutputOperator) {
     auto stream = std::ostringstream{};
     stream << "Hello, 🌍!"_utf8;
     EXPECT_EQ(stream.str(), "Hello, 🌍!");
+}
+
+TEST(Utf8StringTests, Substring) {
+    auto const string = "The quick brown 🦊 jumps over the lazy 🐶."_utf8;
+    auto sub = string.substring(
+            std::find(string.cbegin(), string.cend(), *"🦊"_utf8view.begin()),
+            std::find(string.cbegin(), string.cend(), *"🐶"_utf8view.begin())
+    );
+    EXPECT_EQ(sub, "🦊 jumps over the lazy "_utf8view);
+
+    auto reconstructed = Utf8String{};
+    for (auto const& c : sub) {
+        reconstructed += c;
+    }
+    EXPECT_EQ(reconstructed, "🦊 jumps over the lazy ");
+
+    sub = string.substring(std::find(string.cbegin(), string.cend(), *"🐶"_utf8view.begin()));
+    EXPECT_EQ(sub, "🐶."_utf8view);
+
+    sub = string.substring(string.cbegin() + 4, 5);
+    EXPECT_EQ(sub, "quick");
+
+    sub = string.substring(10, 7);
+    EXPECT_EQ(sub, "brown 🦊"_utf8view);
+
+    sub = string.substring(10);
+    EXPECT_EQ(sub, "brown 🦊 jumps over the lazy 🐶."_utf8view);
 }

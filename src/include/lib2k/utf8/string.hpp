@@ -33,6 +33,8 @@ namespace c2k {
         Utf8String(std::string string);      // NOLINT (implicit converting constructor)
         Utf8String(char const* const string) // NOLINT (implicit converting constructor)
             : Utf8String{ std::string{ string } } { }
+        Utf8String(ConstIterator const& begin, ConstIterator const& end);
+
         [[nodiscard]] static Utf8String from_string_unchecked(std::string data);
         [[nodiscard]] static tl::expected<Utf8String, Utf8Error> from_chars(std::string chars);
         [[nodiscard]] static bool is_valid_utf8(std::string_view string);
@@ -46,6 +48,12 @@ namespace c2k {
         }
 
         [[nodiscard]] std::size_t calculate_char_width() const;
+
+        [[nodiscard]] Utf8String substring(ConstIterator const& begin, ConstIterator const& end) const;
+        [[nodiscard]] Utf8String substring(ConstIterator const& begin) const;
+        [[nodiscard]] Utf8String substring(ConstIterator const& begin, std::size_t num_chars) const;
+        [[nodiscard]] Utf8String substring(std::size_t start, std::size_t num_chars) const;
+        [[nodiscard]] Utf8String substring(std::size_t start) const;
 
         [[nodiscard]] bool operator==(Utf8String const& other) const;
 
