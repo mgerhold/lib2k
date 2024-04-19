@@ -51,4 +51,30 @@ namespace c2k {
         return width;
     }
 
+    [[nodiscard]] Utf8StringView Utf8StringView::substring(ConstIterator const begin, ConstIterator const end) const {
+        return Utf8StringView{ begin, end };
+    }
+
+    [[nodiscard]] Utf8StringView Utf8StringView::substring(ConstIterator const begin) const {
+        return substring(begin, this->cend());
+    }
+
+    // clang-format off
+    [[nodiscard]] Utf8StringView Utf8StringView::substring(
+        ConstIterator const begin,
+        std::size_t const num_chars
+    ) const { // clang-format on
+        return substring(begin, begin + static_cast<ConstIterator::difference_type>(num_chars));
+    }
+
+    [[nodiscard]] Utf8StringView Utf8StringView::substring(std::size_t const start, std::size_t const num_chars) const {
+        auto const begin = this->cbegin() + static_cast<ConstIterator::difference_type>(start);
+        auto const end = begin + static_cast<ConstIterator::difference_type>(num_chars);
+        return substring(begin, end);
+    }
+
+    [[nodiscard]] Utf8StringView Utf8StringView::substring(std::size_t const start) const {
+        auto const begin = this->cbegin() + static_cast<ConstIterator::difference_type>(start);
+        return substring(begin, this->cend());
+    }
 } // namespace c2k

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <gtest/gtest.h>
 #include <lib2k/utf8.hpp>
 
@@ -183,5 +184,33 @@ TEST(Utf8StringViewTests, IsEmpty) {
     EXPECT_TRUE(""_utf8view.is_empty());
     EXPECT_FALSE("!"_utf8view.is_empty());
 }
+
+TEST(Utf8StringViewTests, Substring) {
+    auto const string = "The quick brown 🦊 jumps over the lazy 🐶."_utf8view;
+    auto sub = string.substring(
+            std::find(string.cbegin(), string.cend(), *"🦊"_utf8view.begin()),
+            std::find(string.cbegin(), string.cend(), *"🐶"_utf8view.begin())
+    );
+    EXPECT_EQ(sub, "🦊 jumps over the lazy "_utf8view);
+
+    auto reconstructed = Utf8String{};
+    for (auto const& c : sub) {
+        reconstructed += c;
+    }
+    EXPECT_EQ(reconstructed, "🦊 jumps over the lazy ");
+
+    sub = string.substring(std::find(string.cbegin(), string.cend(), *"🐶"_utf8view.begin()));
+    EXPECT_EQ(sub, "🐶."_utf8view);
+
+    sub = string.substring(string.cbegin() + 4, 5);
+    EXPECT_EQ(sub, "quick");
+
+    sub = string.substring(10, 7);
+    EXPECT_EQ(sub, "brown 🦊"_utf8view);
+
+    sub = string.substring(10);
+    EXPECT_EQ(sub, "brown 🦊 jumps over the lazy 🐶."_utf8view);
+}
+
 // todo: check what happens if you try to iterate over empty strings or string_views
 // todo: also check iterators for non null-terminated strings (when using views)
