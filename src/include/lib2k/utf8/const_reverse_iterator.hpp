@@ -25,6 +25,8 @@ namespace c2k::detail {
     public:
         constexpr Utf8ConstReverseIterator() = default;
 
+        [[nodiscard]] Utf8ConstIterator base() const;
+
         [[nodiscard]] Utf8Char const& operator*() const {
             return m_current;
         }
