@@ -178,8 +178,8 @@ namespace c2k {
     void Utf8String::reverse() {
         auto new_string = Utf8String{};
         new_string.reserve(m_data.size());
-        for (auto const c : *this) {
-            new_string = c + new_string;
+        for (auto it = crbegin(); it != crend(); ++it) {
+            new_string += *it;
         }
         *this = std::move(new_string);
     }
