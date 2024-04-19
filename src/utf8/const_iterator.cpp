@@ -95,14 +95,29 @@ namespace c2k::detail {
     }
 
     [[nodiscard]] Utf8ConstIterator Utf8ConstIterator::operator+(difference_type const offset) const {
-        if (offset < 0) {
-            throw std::invalid_argument{ "cannot add negative value to Utf8String::ConstIterator" };
-        }
         auto copy = *this;
-        for (auto i = difference_type{ 0 }; i < offset; ++i) {
-            ++copy;
-        }
+        copy += offset;
         return copy;
+    }
+
+    Utf8ConstIterator& Utf8ConstIterator::operator+=(difference_type const offset) {
+        if (offset == 0) {
+            return *this;
+        }
+        if (offset > 0) {
+            for (auto i = difference_type{ 0 }; i < offset; ++i) {
+                ++(*this);
+            }
+            return *this;
+        }
+        for (auto i = difference_type{ 0 }; i < -offset; ++i) {
+            --(*this);
+        }
+        return *this;
+    }
+
+    Utf8ConstIterator& Utf8ConstIterator::operator-=(difference_type const offset) {
+        return (*this) += -offset;
     }
 
     // clang-format off
@@ -114,5 +129,9 @@ namespace c2k::detail {
             ++distance;
         }
         return distance;
+    }
+
+    [[nodiscard]] Utf8ConstIterator Utf8ConstIterator::operator-(difference_type const offset) const {
+        return *this + (-offset);
     }
 } // namespace c2k::detail

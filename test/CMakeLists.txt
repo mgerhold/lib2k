@@ -24,6 +24,7 @@ add_executable(utf8_tests
         utf8/utf8char_tests.cpp
         utf8/utf8string_tests.cpp
         utf8/utf8string_view_tests.cpp
+        utf8/utf8iterator_tests.cpp
 )
 
 target_link_libraries(utf8_tests PRIVATE lib2k lib2k_options)

@@ -40,7 +40,16 @@ namespace c2k {
             Utf8ConstIterator& operator--();
             [[nodiscard]] Utf8ConstIterator operator--(int);
             [[nodiscard]] Utf8ConstIterator operator+(difference_type offset) const;
+
+            [[nodiscard]] friend Utf8ConstIterator
+            operator+(difference_type const offset, Utf8ConstIterator const& iterator) {
+                return iterator + offset;
+            }
+
             [[nodiscard]] difference_type operator-(Utf8ConstIterator const& other) const;
+            [[nodiscard]] Utf8ConstIterator operator-(difference_type offset) const;
+            Utf8ConstIterator& operator+=(difference_type offset);
+            Utf8ConstIterator& operator-=(difference_type offset);
 
             [[nodiscard]] constexpr bool operator==(Utf8ConstIterator const& other) const {
                 return m_next_char_start == other.m_next_char_start
