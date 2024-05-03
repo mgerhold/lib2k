@@ -169,7 +169,6 @@ namespace c2k {
         return find(needle, cbegin());
     }
 
-
     [[nodiscard]] Utf8String::ConstIterator Utf8String::find(Utf8Char const needle, ConstIterator const& start) const {
         auto const start_offset = reinterpret_cast<char const*>(start.m_next_char_start) - m_data.data();
         auto const substring_data = std::string_view{ m_data }.substr(start_offset);

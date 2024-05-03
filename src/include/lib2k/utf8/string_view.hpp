@@ -36,6 +36,10 @@ namespace c2k {
             return m_view.empty();
         }
 
+        [[nodiscard]] std::size_t num_bytes() const {
+            return m_view.length();
+        }
+
         [[nodiscard]] std::size_t calculate_char_count() const {
             return static_cast<std::size_t>(cend() - cbegin());
         }
@@ -95,6 +99,13 @@ namespace c2k {
             return rend();
         }
 
+        [[nodiscard]] ConstIterator find(Utf8Char needle) const;
+        [[nodiscard]] ConstIterator find(Utf8Char needle, ConstIterator const& start) const;
+        [[nodiscard]] ConstIterator find(Utf8Char needle, ConstIterator::difference_type start_position) const;
+        [[nodiscard]] ConstIterator find(Utf8StringView needle) const;
+        [[nodiscard]] ConstIterator find(Utf8StringView needle, ConstIterator const& start) const;
+        [[nodiscard]] ConstIterator find(Utf8StringView needle, ConstIterator::difference_type start_position) const;
+
         [[nodiscard]] Utf8String join(Iterable<Utf8StringView> auto const& iterable) const {
             if (std::cbegin(iterable) == std::cend(iterable)) {
                 return {};
@@ -108,6 +119,8 @@ namespace c2k {
             }
             return result;
         }
+
+        [[nodiscard]] std::vector<Utf8StringView> split(Utf8StringView delimiter);
     };
 
     namespace Utf8Literals {

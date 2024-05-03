@@ -16,7 +16,7 @@ namespace c2k {
         while (pos != std::string::npos) {
             result.push_back(s.substr(last_pos, pos - last_pos));
             last_pos = pos + delimiter.length();
-            pos = s.find(delimiter, pos + delimiter.length());
+            pos = s.find(delimiter, last_pos);
         }
 
         if (last_pos <= s.length()) {

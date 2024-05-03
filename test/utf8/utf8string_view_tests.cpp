@@ -260,3 +260,39 @@ TEST(Utf8StringViewTests, Join) {
     char const* nullStrings[] = { nullptr, nullptr };
     EXPECT_THROW({ std::ignore = ", "_utf8view.join(nullStrings); }, std::invalid_argument);
 }
+
+TEST(Utf8StringViewTests, Split) {
+    using namespace std::string_literals;
+
+    EXPECT_EQ("one;two;three"_utf8view.split(";"), (std::vector{ "one"_utf8view, "two"_utf8view, "three"_utf8view }));
+    EXPECT_EQ(
+            "one|two|three|four"_utf8view.split("|"),
+            (std::vector{ "one"_utf8view, "two"_utf8view, "three"_utf8view, "four"_utf8view })
+    );
+    EXPECT_EQ("apple"_utf8view.split("|"), std::vector{ "apple"_utf8view });
+    EXPECT_EQ(""_utf8view.split(";"), std::vector{ ""_utf8view });
+    EXPECT_EQ(",,,"_utf8view.split(","), (std::vector{ ""_utf8view, ""_utf8view, ""_utf8view, ""_utf8view }));
+    EXPECT_EQ("a,a,a"_utf8view.split(","), (std::vector{ "a"_utf8view, "a"_utf8view, "a"_utf8view }));
+    EXPECT_EQ(
+            "banana;apple;cherry;blueberry;raspberry"_utf8view.split(";"),
+            (std::vector{ "banana"_utf8view,
+                          "apple"_utf8view,
+                          "cherry"_utf8view,
+                          "blueberry"_utf8view,
+                          "raspberry"_utf8view })
+    );
+    EXPECT_EQ(
+            "data, more data, even more data"_utf8view.split(","),
+            (std::vector{ "data"_utf8view, " more data"_utf8view, " even more data"_utf8view })
+    );
+    EXPECT_EQ(
+            "this.is.a.test"_utf8view.split("."),
+            (std::vector{ "this"_utf8view, "is"_utf8view, "a"_utf8view, "test"_utf8view })
+    );
+    EXPECT_EQ("no_delimiters"_utf8view.split("#"), std::vector{ "no_delimiters"_utf8view });
+    EXPECT_EQ("hello\nworld\n"_utf8view.split("\n"), (std::vector{ "hello"_utf8view, "world"_utf8view, ""_utf8view }));
+    EXPECT_EQ(
+            ";semi;colons;everywhere;"_utf8view.split(";"),
+            (std::vector{ ""_utf8view, "semi"_utf8view, "colons"_utf8view, "everywhere"_utf8view, ""_utf8view })
+    );
+}

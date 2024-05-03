@@ -16,6 +16,7 @@ namespace c2k {
     class Utf8Char final {
         friend class detail::Utf8ConstIterator;
         friend class Utf8String;
+        friend class Utf8StringView;
 
     private:
         using Codepoint = StaticVector<std::byte, 4>;

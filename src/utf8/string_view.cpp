@@ -102,4 +102,93 @@ namespace c2k {
         }
         return *(cend() - 1);
     }
+
+    [[nodiscard]] Utf8StringView::ConstIterator Utf8StringView::find(Utf8Char const needle) const {
+        return find(needle, cbegin());
+    }
+
+    // clang-format off
+    [[nodiscard]] Utf8StringView::ConstIterator Utf8StringView::find(
+        Utf8Char const needle,
+        ConstIterator const& start
+    ) const { // clang-format on
+        auto const start_offset = reinterpret_cast<char const*>(start.m_next_char_start) - m_view.data();
+        auto const substring_data = m_view.substr(start_offset);
+        assert(not needle.m_codepoint.empty());
+        auto const needle_substring = std::string_view{
+            reinterpret_cast<char const*>(needle.m_codepoint.data()),
+            reinterpret_cast<char const*>(needle.m_codepoint.data() + needle.m_codepoint.size()),
+        };
+        auto const position = substring_data.find(needle_substring);
+        if (position == std::string_view::npos) {
+            return cend();
+        }
+        return ConstIterator{
+            reinterpret_cast<std::byte const*>(
+                    &*(substring_data.begin() + static_cast<std::string_view::difference_type>(position))
+            ),
+        };
+    }
+
+    // clang-format off
+    [[nodiscard]] Utf8StringView::ConstIterator Utf8StringView::find(
+        Utf8Char const needle,
+        ConstIterator::difference_type const start_position
+    ) const { // clang-format on
+        return find(needle, cbegin() + start_position);
+    }
+
+    [[nodiscard]] Utf8StringView::ConstIterator Utf8StringView::find(Utf8StringView const needle) const {
+        return find(needle, cbegin());
+    }
+
+    // clang-format off
+    [[nodiscard]] Utf8StringView::ConstIterator Utf8StringView::find(
+        Utf8StringView const needle,
+        ConstIterator const& start
+    ) const { // clang-format on
+        auto const start_offset = reinterpret_cast<char const*>(start.m_next_char_start) - m_view.data();
+        auto const substring_data = m_view.substr(start_offset);
+        auto const needle_string = std::string_view{ needle.m_view };
+        auto const position = substring_data.find(needle_string);
+        if (position == std::string_view::npos) {
+            return cend();
+        }
+        return ConstIterator{
+            reinterpret_cast<std::byte const*>(
+                    &*(substring_data.begin() + static_cast<std::string_view::difference_type>(position))
+            ),
+        };
+    }
+
+    // clang-format off
+    Utf8StringView::ConstIterator Utf8StringView::find(
+        Utf8StringView const needle,
+        ConstIterator::difference_type const start_position
+    ) const { // clang-format on
+        return find(needle, cbegin() + start_position);
+    }
+
+    [[nodiscard]] std::vector<Utf8StringView> Utf8StringView::split(Utf8StringView const delimiter) {
+        if (delimiter.is_empty()) {
+            throw std::invalid_argument{ "cannot split string with empty delimiter" };
+        }
+
+        auto find_iterator = find(delimiter);
+        if (find_iterator == cend()) {
+            return { *this };
+        }
+
+        auto const delimiter_char_count = delimiter.calculate_char_count();
+
+        auto result = std::vector<Utf8StringView>{};
+        decltype(find_iterator) last_iterator = cbegin();
+        while (find_iterator != cend()) {
+            result.push_back(substring(last_iterator, find_iterator));
+            last_iterator = find_iterator + static_cast<ConstIterator::difference_type>(delimiter_char_count);
+            find_iterator = find(delimiter, last_iterator);
+        }
+        result.push_back(substring(last_iterator));
+        return result;
+    }
 } // namespace c2k
