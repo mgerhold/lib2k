@@ -159,6 +159,20 @@ namespace c2k {
             return result;
         }
 
+        [[nodiscard]] Utf8String join(Iterable<Utf8StringView> auto const& iterable) const {
+            if (std::cbegin(iterable) == std::cend(iterable)) {
+                return {};
+            }
+            auto it = std::cbegin(iterable);
+            auto result = Utf8String{ *it };
+            ++it;
+            for (; it != std::cend(iterable); ++it) {
+                result += *this;
+                result += *it;
+            }
+            return result;
+        }
+
         friend std::ostream& operator<<(std::ostream& os, Utf8String const& string) {
             return os << string.m_data;
         }

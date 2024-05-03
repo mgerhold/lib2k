@@ -398,3 +398,20 @@ TEST(Utf8StringTests, FrontAndBack) {
     EXPECT_EQ(string.front(), 'C');
     EXPECT_EQ(string.back(), *"🐀"_utf8view.cbegin());
 }
+
+TEST(Utf8StringTests, Join) {
+    using namespace std::string_literals;
+    EXPECT_EQ(", "_utf8.join(std::vector{ "this", "is", "a", "test" }), "this, is, a, test");
+
+    char const* words[] = { "this", "is", "a", "test" };
+    EXPECT_EQ(", "_utf8.join(words), "this, is, a, test");
+
+    EXPECT_EQ(", "_utf8.join(std::vector<std::string>{}), "");
+
+    EXPECT_EQ(", "_utf8.join(std::vector{ "single" }), "single");
+
+    EXPECT_EQ(", "_utf8.join(std::vector{ "1", "2", "3", "4" }), "1, 2, 3, 4");
+
+    char const* nullStrings[] = { nullptr, nullptr };
+    EXPECT_THROW({ std::ignore = ", "_utf8.join(nullStrings); }, std::invalid_argument);
+}
