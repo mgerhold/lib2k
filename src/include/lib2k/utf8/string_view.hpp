@@ -1,7 +1,9 @@
 #pragma once
 
+#include "../concepts.hpp"
 #include "const_iterator.hpp"
 #include "const_reverse_iterator.hpp"
+#include "string.hpp"
 #include <string_view>
 
 namespace c2k {
@@ -12,6 +14,8 @@ namespace c2k {
     }
 
     class Utf8StringView final {
+        friend class Utf8String;
+
     private:
         std::string_view m_view;
 
@@ -20,7 +24,8 @@ namespace c2k {
         using ReverseIterator = detail::Utf8ConstReverseIterator;
 
         constexpr Utf8StringView() = default;
-        Utf8StringView(Utf8String const& string); // NOLINT (implicit converting constructor)
+        Utf8StringView(Utf8String const& string);  // NOLINT (implicit converting constructor)
+        Utf8StringView(std::string const& string); // NOLINT (implicit converting constructor)
         Utf8StringView(detail::Utf8ConstIterator const& begin, detail::Utf8ConstIterator const& end);
         Utf8StringView(std::string_view view); // NOLINT (implicit converting constructor)
         Utf8StringView(char const* chars);     // NOLINT (implicit converting constructor)
@@ -88,6 +93,20 @@ namespace c2k {
 
         [[nodiscard]] ReverseIterator crend() const {
             return rend();
+        }
+
+        [[nodiscard]] Utf8String join(Iterable<Utf8StringView> auto const& iterable) const {
+            if (std::cbegin(iterable) == std::cend(iterable)) {
+                return {};
+            }
+            auto it = std::cbegin(iterable);
+            auto result = Utf8String{ *it };
+            ++it;
+            for (; it != std::cend(iterable); ++it) {
+                result += *this;
+                result += *it;
+            }
+            return result;
         }
     };
 

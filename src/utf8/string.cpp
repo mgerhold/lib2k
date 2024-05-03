@@ -36,6 +36,16 @@ namespace c2k {
         m_data = std::move(string);
     }
 
+    Utf8String::Utf8String(char const* const string) {
+        if (string == nullptr) {
+            throw std::invalid_argument{ "cannot create Utf8String from nullptr" };
+        }
+        if (not is_valid_utf8(string)) {
+            throw InvalidUtf8String{};
+        }
+        m_data = std::string{ string };
+    }
+
     [[nodiscard]] tl::expected<Utf8String, Utf8Error> Utf8String::from_chars(std::string chars) {
         if (not is_valid_utf8(chars)) {
             return tl::unexpected{ Utf8Error::InvalidUtf8String };
@@ -110,8 +120,33 @@ namespace c2k {
         }
     }
 
+    void Utf8String::append(char const* c_string) {
+        append(Utf8StringView{ c_string });
+    }
+
+    void Utf8String::append(std::string const& string) {
+        append(Utf8StringView{ string });
+    }
+
     void Utf8String::append(Utf8String const& string) {
         std::copy(string.m_data.cbegin(), string.m_data.cend(), std::back_inserter(m_data));
+    }
+
+    void Utf8String::append(Utf8StringView const view) {
+        std::copy(view.m_view.cbegin(), view.m_view.cend(), std::back_inserter(m_data));
+    }
+
+    Utf8String& Utf8String::operator+=(char const* c_string) {
+        return *this += Utf8StringView{ c_string };
+    }
+
+    Utf8String& Utf8String::operator+=(std::string const& string) {
+        return *this += Utf8StringView{ string };
+    }
+
+    Utf8String& Utf8String::operator+=(Utf8StringView other) {
+        append(other);
+        return *this;
     }
 
     [[nodiscard]] Utf8String Utf8String::operator+(Utf8Char const c) const {

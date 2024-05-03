@@ -30,9 +30,9 @@ namespace c2k {
         using ReverseIterator = detail::Utf8ConstReverseIterator;
 
         Utf8String() = default;
-        Utf8String(std::string string);      // NOLINT (implicit converting constructor)
-        Utf8String(char const* const string) // NOLINT (implicit converting constructor)
-            : Utf8String{ std::string{ string } } { }
+        Utf8String(std::string string); // NOLINT (implicit converting constructor)
+        Utf8String(char const* string); // NOLINT (implicit converting constructor)
+
         Utf8String(ConstIterator const& begin, ConstIterator const& end);
 
         [[nodiscard]] static Utf8String from_string_unchecked(std::string data);
@@ -100,17 +100,29 @@ namespace c2k {
 
         void append(Utf8Char c);
 
+        void append(char const* c_string);
+
+        void append(std::string const& string);
+
         void append(Utf8String const& string);
+
+        void append(Utf8StringView view);
 
         Utf8String& operator+=(Utf8Char const c) {
             append(c);
             return *this;
         }
 
+        Utf8String& operator+=(char const* c_string);
+
+        Utf8String& operator+=(std::string const& string);
+
         Utf8String& operator+=(Utf8String const& other) {
             append(other);
             return *this;
         }
+
+        Utf8String& operator+=(Utf8StringView other);
 
         [[nodiscard]] Utf8String operator+(Utf8Char c) const;
         [[nodiscard]] Utf8String operator+(Utf8String const& other) const;

@@ -6,6 +6,13 @@ namespace c2k {
 
     Utf8StringView::Utf8StringView(Utf8String const& string) : m_view{ string.m_data } { }
 
+    Utf8StringView::Utf8StringView(std::string const& string) {
+        if (not Utf8String::is_valid_utf8(string)) {
+            throw InvalidUtf8String{};
+        }
+        *this = from_string_view_unchecked(string);
+    }
+
     Utf8StringView::Utf8StringView(detail::Utf8ConstIterator const& begin, detail::Utf8ConstIterator const& end)
         : m_view{ reinterpret_cast<char const*>(begin.m_next_char_start),
                   reinterpret_cast<char const*>(end.m_next_char_start) } { }
@@ -17,7 +24,11 @@ namespace c2k {
         *this = from_string_view_unchecked(view);
     }
 
-    Utf8StringView::Utf8StringView(char const* const chars) : Utf8StringView{ std::string_view{ chars } } { }
+    Utf8StringView::Utf8StringView(char const* const chars) : Utf8StringView{ std::string_view{ chars } } {
+        if (chars == nullptr) {
+            throw std::invalid_argument{ "cannot create Utf8String from nullptr" };
+        }
+    }
 
     [[nodiscard]] Utf8StringView Utf8StringView::from_string_view_unchecked(std::string_view const view) {
         auto result = Utf8StringView{};

@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <gtest/gtest.h>
 #include <lib2k/utf8.hpp>
+#include <vector>
 
 using c2k::Utf8Char;
 using c2k::Utf8String;
@@ -241,4 +242,21 @@ TEST(Utf8StringViewTests, NonNullTerminatedStringView) {
     }
     EXPECT_EQ(count, 7);
     EXPECT_NE(*sub_view.cend(), '\0'); // this string view is not null-terminated
+}
+
+TEST(Utf8StringViewTests, Join) {
+    using namespace std::string_literals;
+    EXPECT_EQ(", "_utf8view.join(std::vector{ "this", "is", "a", "test" }), "this, is, a, test");
+
+    char const* words[] = { "this", "is", "a", "test" };
+    EXPECT_EQ(", "_utf8view.join(words), "this, is, a, test");
+
+    EXPECT_EQ(", "_utf8view.join(std::vector<std::string>{}), "");
+
+    EXPECT_EQ(", "_utf8view.join(std::vector{ "single" }), "single");
+
+    EXPECT_EQ(", "_utf8view.join(std::vector{ "1", "2", "3", "4" }), "1, 2, 3, 4");
+
+    char const* nullStrings[] = { nullptr, nullptr };
+    EXPECT_THROW({ std::ignore = ", "_utf8view.join(nullStrings); }, std::invalid_argument);
 }
