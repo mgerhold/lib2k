@@ -415,3 +415,29 @@ TEST(Utf8StringTests, Join) {
     char const* nullStrings[] = { nullptr, nullptr };
     EXPECT_THROW({ std::ignore = ", "_utf8.join(nullStrings); }, std::invalid_argument);
 }
+
+TEST(Utf8StringTests, Split) {
+    using namespace std::string_literals;
+
+    EXPECT_EQ("one;two;three"_utf8.split(";"), (std::vector{ "one"_utf8, "two"_utf8, "three"_utf8 }));
+    EXPECT_EQ("one|two|three|four"_utf8.split("|"), (std::vector{ "one"_utf8, "two"_utf8, "three"_utf8, "four"_utf8 }));
+    EXPECT_EQ("apple"_utf8.split("|"), std::vector{ "apple"_utf8 });
+    EXPECT_EQ(""_utf8.split(";"), std::vector{ ""_utf8 });
+    EXPECT_EQ(",,,"_utf8.split(","), (std::vector{ ""_utf8, ""_utf8, ""_utf8, ""_utf8 }));
+    EXPECT_EQ("a,a,a"_utf8.split(","), (std::vector{ "a"_utf8, "a"_utf8, "a"_utf8 }));
+    EXPECT_EQ(
+            "banana;apple;cherry;blueberry;raspberry"_utf8.split(";"),
+            (std::vector{ "banana"_utf8, "apple"_utf8, "cherry"_utf8, "blueberry"_utf8, "raspberry"_utf8 })
+    );
+    EXPECT_EQ(
+            "data, more data, even more data"_utf8.split(","),
+            (std::vector{ "data"_utf8, " more data"_utf8, " even more data"_utf8 })
+    );
+    EXPECT_EQ("this.is.a.test"_utf8.split("."), (std::vector{ "this"_utf8, "is"_utf8, "a"_utf8, "test"_utf8 }));
+    EXPECT_EQ("no_delimiters"_utf8.split("#"), std::vector{ "no_delimiters"_utf8 });
+    EXPECT_EQ("hello\nworld\n"_utf8.split("\n"), (std::vector{ "hello"_utf8, "world"_utf8, ""_utf8 }));
+    EXPECT_EQ(
+            ";semi;colons;everywhere;"_utf8.split(";"),
+            (std::vector{ ""_utf8, "semi"_utf8, "colons"_utf8, "everywhere"_utf8, ""_utf8 })
+    );
+}

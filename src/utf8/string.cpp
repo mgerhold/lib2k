@@ -46,6 +46,8 @@ namespace c2k {
         m_data = std::string{ string };
     }
 
+    Utf8String::Utf8String(Utf8StringView const view) : m_data{ view.m_view } { }
+
     [[nodiscard]] tl::expected<Utf8String, Utf8Error> Utf8String::from_chars(std::string chars) {
         if (not is_valid_utf8(chars)) {
             return tl::unexpected{ Utf8Error::InvalidUtf8String };
@@ -98,6 +100,14 @@ namespace c2k {
 
     [[nodiscard]] bool Utf8String::operator==(Utf8String const& other) const {
         return m_data == other.m_data;
+    }
+
+    [[nodiscard]] bool Utf8String::operator==(Utf8StringView const other) const {
+        return Utf8StringView{ *this } == other;
+    }
+
+    [[nodiscard]] bool Utf8String::operator==(char const* other) const {
+        return *this == Utf8StringView{ other };
     }
 
     [[nodiscard]] Utf8Char Utf8String::front() const {
@@ -261,5 +271,15 @@ namespace c2k {
 
     [[nodiscard]] Utf8String Utf8String::to_lowercase() const {
         return transform([](Utf8Char const c) { return c.to_lowercase(); });
+    }
+
+    [[nodiscard]] std::vector<Utf8String> Utf8String::split(Utf8StringView const delimiter) const {
+        auto const views = Utf8StringView{ *this }.split(delimiter);
+        auto result = std::vector<Utf8String>{};
+        result.reserve(views.size());
+        for (auto const view : views) {
+            result.emplace_back(view);
+        }
+        return result;
     }
 } // namespace c2k
