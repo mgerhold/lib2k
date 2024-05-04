@@ -31,6 +31,9 @@ namespace c2k {
     public:
         using value_type = T;
 
+        // clang-format off
+        Synchronized() requires(std::default_initializable<T>) = default;
+        // clang-format on
         explicit Synchronized(T data) : m_data{ std::move(data) } { }
 
         /**
