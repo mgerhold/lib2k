@@ -398,3 +398,96 @@ TEST(Utf8StringTests, FrontAndBack) {
     EXPECT_EQ(string.front(), 'C');
     EXPECT_EQ(string.back(), *"🐀"_utf8view.cbegin());
 }
+
+TEST(Utf8StringTests, Join) {
+    using namespace std::string_literals;
+    EXPECT_EQ(", "_utf8.join(std::vector{ "this", "is", "a", "test" }), "this, is, a, test");
+
+    char const* words[] = { "this", "is", "a", "test" };
+    EXPECT_EQ(", "_utf8.join(words), "this, is, a, test");
+
+    EXPECT_EQ(", "_utf8.join(std::vector<std::string>{}), "");
+
+    EXPECT_EQ(", "_utf8.join(std::vector{ "single" }), "single");
+
+    EXPECT_EQ(", "_utf8.join(std::vector{ "1", "2", "3", "4" }), "1, 2, 3, 4");
+
+    char const* nullStrings[] = { nullptr, nullptr };
+    EXPECT_THROW({ std::ignore = ", "_utf8.join(nullStrings); }, std::invalid_argument);
+}
+
+TEST(Utf8StringTests, Split) {
+    using namespace std::string_literals;
+
+    EXPECT_EQ("one;two;three"_utf8.split(";"), (std::vector{ "one"_utf8, "two"_utf8, "three"_utf8 }));
+    EXPECT_EQ("one|two|three|four"_utf8.split("|"), (std::vector{ "one"_utf8, "two"_utf8, "three"_utf8, "four"_utf8 }));
+    EXPECT_EQ("apple"_utf8.split("|"), std::vector{ "apple"_utf8 });
+    EXPECT_EQ(""_utf8.split(";"), std::vector{ ""_utf8 });
+    EXPECT_EQ(",,,"_utf8.split(","), (std::vector{ ""_utf8, ""_utf8, ""_utf8, ""_utf8 }));
+    EXPECT_EQ("a,a,a"_utf8.split(","), (std::vector{ "a"_utf8, "a"_utf8, "a"_utf8 }));
+    EXPECT_EQ(
+            "banana;apple;cherry;blueberry;raspberry"_utf8.split(";"),
+            (std::vector{ "banana"_utf8, "apple"_utf8, "cherry"_utf8, "blueberry"_utf8, "raspberry"_utf8 })
+    );
+    EXPECT_EQ(
+            "data, more data, even more data"_utf8.split(","),
+            (std::vector{ "data"_utf8, " more data"_utf8, " even more data"_utf8 })
+    );
+    EXPECT_EQ("this.is.a.test"_utf8.split("."), (std::vector{ "this"_utf8, "is"_utf8, "a"_utf8, "test"_utf8 }));
+    EXPECT_EQ("no_delimiters"_utf8.split("#"), std::vector{ "no_delimiters"_utf8 });
+    EXPECT_EQ("hello\nworld\n"_utf8.split("\n"), (std::vector{ "hello"_utf8, "world"_utf8, ""_utf8 }));
+    EXPECT_EQ(
+            ";semi;colons;everywhere;"_utf8.split(";"),
+            (std::vector{ ""_utf8, "semi"_utf8, "colons"_utf8, "everywhere"_utf8, ""_utf8 })
+    );
+}
+
+TEST(Utf8StringTests, Replace) {
+    using namespace c2k::Utf8Literals;
+    using c2k::MaxReplacementCount;
+    EXPECT_EQ("abc"_utf8.replace("abc", "abc"), "abc");
+    EXPECT_EQ("abc"_utf8.replace("b", "abc"), "aabcc");
+    EXPECT_EQ("abc"_utf8.replace("d", ""), "abc");
+    EXPECT_EQ(""_utf8.replace("", ""), "");
+    EXPECT_EQ(""_utf8.replace("", "test"), "test");
+    EXPECT_EQ("ǺBC"_utf8.replace("Ǻ", "A"), "ABC");
+    EXPECT_EQ("Hello, 🌍!"_utf8.replace("🌍", "World"), "Hello, World!");
+    EXPECT_EQ("abababab"_utf8.replace("aba", "<>"), "<>b<>b");
+    EXPECT_EQ("abcabc"_utf8.replace("a", "ab"), "abbcabbc");
+    EXPECT_EQ("abc"_utf8.replace("b", "bcd"), "abcdc");
+    EXPECT_EQ("aaaa"_utf8.replace("a", "aa"), "aaaaaaaa");
+    EXPECT_EQ("312312312312"_utf8.replace("23", "!"), "31!1!1!12");
+    EXPECT_EQ("312312312312"_utf8.replace("23", "!!"), "31!!1!!1!!12");
+    EXPECT_EQ("312312312312"_utf8.replace("23", "test"), "31test1test1test12");
+    EXPECT_EQ("testtesttest"_utf8.replace("test", "a"), "aaa");
+    EXPECT_EQ("Hello, Bjarne!"_utf8.replace("Bjarne", "Herb"), "Hello, Herb!");
+    EXPECT_EQ("1, 2, 3"_utf8.replace(", ", "\n"), "1\n2\n3");
+    EXPECT_EQ("to"_utf8.replace("too long", "something"), "to");
+    EXPECT_EQ("abc"_utf8.replace("", "test"), "testatestbtestctest");
+    EXPECT_EQ("Bjarne is cool, Scott is cool"_utf8.replace(" is cool", ""), "Bjarne, Scott");
+
+    // with start iterator
+    auto view = "aaaa"_utf8;
+    EXPECT_EQ(view.replace("a", "!", view.cbegin() + 2), "aa!!");
+    view = "NaNaNaNaNa";
+    EXPECT_EQ(view.replace("Na", "Batman!", view.cbegin() + 8), "NaNaNaNaBatman!");
+    view = "abc";
+    EXPECT_EQ(view.replace("abc", "abc", view.cbegin()), "abc");
+    view = "Bjarne is cool, Scott is cool";
+    EXPECT_EQ(view.replace(" is cool", "", view.cbegin()), "Bjarne, Scott");
+    view = "aaaa";
+    EXPECT_EQ(view.replace("a", "!", view.cbegin() + 4), "aaaa");
+
+    // with max replacement count
+    EXPECT_EQ("aaaa"_utf8.replace("a", "!", MaxReplacementCount{ 2 }), "!!aa");
+    EXPECT_EQ("aaaa"_utf8.replace("a", "!", MaxReplacementCount{ 0 }), "aaaa");
+    EXPECT_EQ("aaaa"_utf8.replace("a", "!", MaxReplacementCount{ 1 }), "!aaa");
+    EXPECT_EQ("aaaa"_utf8.replace("a", "!", MaxReplacementCount{ 4 }), "!!!!");
+    EXPECT_EQ("aaaa"_utf8.replace("a", "!", MaxReplacementCount{ 5 }), "!!!!");
+
+    // with start position and max replacement count
+    view = "aaaaaaa";
+    EXPECT_EQ(view.replace("aa", "!", view.cbegin() + 1, MaxReplacementCount{ 2 }), "a!!aa");
+    view = "1, 2, 3, 4, 5";
+    EXPECT_EQ(view.replace(", ", "\n", view.cbegin() + 2, MaxReplacementCount{ 2 }), "1, 2\n3\n4, 5");
+}

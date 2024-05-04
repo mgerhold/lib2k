@@ -36,6 +36,18 @@ namespace c2k {
         m_data = std::move(string);
     }
 
+    Utf8String::Utf8String(char const* const string) {
+        if (string == nullptr) {
+            throw std::invalid_argument{ "cannot create Utf8String from nullptr" };
+        }
+        if (not is_valid_utf8(string)) {
+            throw InvalidUtf8String{};
+        }
+        m_data = std::string{ string };
+    }
+
+    Utf8String::Utf8String(Utf8StringView const view) : m_data{ view.m_view } { }
+
     [[nodiscard]] tl::expected<Utf8String, Utf8Error> Utf8String::from_chars(std::string chars) {
         if (not is_valid_utf8(chars)) {
             return tl::unexpected{ Utf8Error::InvalidUtf8String };
@@ -90,6 +102,14 @@ namespace c2k {
         return m_data == other.m_data;
     }
 
+    [[nodiscard]] bool Utf8String::operator==(Utf8StringView const other) const {
+        return Utf8StringView{ *this } == other;
+    }
+
+    [[nodiscard]] bool Utf8String::operator==(char const* other) const {
+        return *this == Utf8StringView{ other };
+    }
+
     [[nodiscard]] Utf8Char Utf8String::front() const {
         if (is_empty()) {
             throw std::out_of_range{ "cannot call front() on empty string" };
@@ -110,8 +130,33 @@ namespace c2k {
         }
     }
 
+    void Utf8String::append(char const* c_string) {
+        append(Utf8StringView{ c_string });
+    }
+
+    void Utf8String::append(std::string const& string) {
+        append(Utf8StringView{ string });
+    }
+
     void Utf8String::append(Utf8String const& string) {
         std::copy(string.m_data.cbegin(), string.m_data.cend(), std::back_inserter(m_data));
+    }
+
+    void Utf8String::append(Utf8StringView const view) {
+        std::copy(view.m_view.cbegin(), view.m_view.cend(), std::back_inserter(m_data));
+    }
+
+    Utf8String& Utf8String::operator+=(char const* c_string) {
+        return *this += Utf8StringView{ c_string };
+    }
+
+    Utf8String& Utf8String::operator+=(std::string const& string) {
+        return *this += Utf8StringView{ string };
+    }
+
+    Utf8String& Utf8String::operator+=(Utf8StringView other) {
+        append(other);
+        return *this;
     }
 
     [[nodiscard]] Utf8String Utf8String::operator+(Utf8Char const c) const {
@@ -133,7 +178,6 @@ namespace c2k {
     [[nodiscard]] Utf8String::ConstIterator Utf8String::find(Utf8Char const needle) const {
         return find(needle, cbegin());
     }
-
 
     [[nodiscard]] Utf8String::ConstIterator Utf8String::find(Utf8Char const needle, ConstIterator const& start) const {
         auto const start_offset = reinterpret_cast<char const*>(start.m_next_char_start) - m_data.data();
@@ -227,5 +271,49 @@ namespace c2k {
 
     [[nodiscard]] Utf8String Utf8String::to_lowercase() const {
         return transform([](Utf8Char const c) { return c.to_lowercase(); });
+    }
+
+    [[nodiscard]] std::vector<Utf8String> Utf8String::split(Utf8StringView const delimiter) const {
+        auto const views = Utf8StringView{ *this }.split(delimiter);
+        auto result = std::vector<Utf8String>{};
+        result.reserve(views.size());
+        for (auto const view : views) {
+            result.emplace_back(view);
+        }
+        return result;
+    }
+
+    [[nodiscard]] Utf8String Utf8String::replace(
+            Utf8StringView const to_replace,
+            Utf8StringView const replacement,
+            ConstIterator const& start,
+            MaxReplacementCount const max_num_replacements
+    ) const {
+        return Utf8StringView{ *this }.replace(to_replace, replacement, start, max_num_replacements);
+    }
+
+    // clang-format off
+    [[nodiscard]] Utf8String Utf8String::replace(
+        Utf8StringView const to_replace,
+        Utf8StringView const replacement
+    ) const { // clang-format on
+        return Utf8StringView{ *this }.replace(to_replace, replacement);
+    }
+
+    // clang-format off
+    [[nodiscard]] Utf8String Utf8String::replace(
+        Utf8StringView const to_replace,
+        Utf8StringView const replacement,
+        ConstIterator const& start
+    ) const { // clang-format on
+        return Utf8StringView{ *this }.replace(to_replace, replacement, start);
+    }
+
+    [[nodiscard]] Utf8String Utf8String::replace(
+            Utf8StringView const to_replace,
+            Utf8StringView const replacement,
+            MaxReplacementCount const max_num_replacements
+    ) const {
+        return Utf8StringView{ *this }.replace(to_replace, replacement, max_num_replacements);
     }
 } // namespace c2k

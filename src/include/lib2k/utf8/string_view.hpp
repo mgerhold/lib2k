@@ -1,7 +1,10 @@
 #pragma once
 
+#include "../concepts.hpp"
+#include "../string_utils.hpp"
 #include "const_iterator.hpp"
 #include "const_reverse_iterator.hpp"
+#include "string.hpp"
 #include <string_view>
 
 namespace c2k {
@@ -12,6 +15,8 @@ namespace c2k {
     }
 
     class Utf8StringView final {
+        friend class Utf8String;
+
     private:
         std::string_view m_view;
 
@@ -20,7 +25,8 @@ namespace c2k {
         using ReverseIterator = detail::Utf8ConstReverseIterator;
 
         constexpr Utf8StringView() = default;
-        Utf8StringView(Utf8String const& string); // NOLINT (implicit converting constructor)
+        Utf8StringView(Utf8String const& string);  // NOLINT (implicit converting constructor)
+        Utf8StringView(std::string const& string); // NOLINT (implicit converting constructor)
         Utf8StringView(detail::Utf8ConstIterator const& begin, detail::Utf8ConstIterator const& end);
         Utf8StringView(std::string_view view); // NOLINT (implicit converting constructor)
         Utf8StringView(char const* chars);     // NOLINT (implicit converting constructor)
@@ -29,6 +35,10 @@ namespace c2k {
 
         [[nodiscard]] constexpr bool is_empty() const {
             return m_view.empty();
+        }
+
+        [[nodiscard]] std::size_t num_bytes() const {
+            return m_view.length();
         }
 
         [[nodiscard]] std::size_t calculate_char_count() const {
@@ -88,6 +98,73 @@ namespace c2k {
 
         [[nodiscard]] ReverseIterator crend() const {
             return rend();
+        }
+
+        [[nodiscard]] ConstIterator find(Utf8Char needle) const;
+        [[nodiscard]] ConstIterator find(Utf8Char needle, ConstIterator const& start) const;
+        [[nodiscard]] ConstIterator find(Utf8Char needle, ConstIterator::difference_type start_position) const;
+        [[nodiscard]] ConstIterator find(Utf8StringView needle) const;
+        [[nodiscard]] ConstIterator find(Utf8StringView needle, ConstIterator const& start) const;
+        [[nodiscard]] ConstIterator find(Utf8StringView needle, ConstIterator::difference_type start_position) const;
+
+        [[nodiscard]] Utf8String join(Iterable<Utf8StringView> auto const& iterable) const {
+            if (std::cbegin(iterable) == std::cend(iterable)) {
+                return {};
+            }
+            auto it = std::cbegin(iterable);
+            auto result = Utf8String{ *it };
+            ++it;
+            for (; it != std::cend(iterable); ++it) {
+                result += *this;
+                result += *it;
+            }
+            return result;
+        }
+
+        [[nodiscard]] std::vector<Utf8StringView> split(Utf8StringView delimiter);
+
+        // clang-format off
+        [[nodiscard]] Utf8String replace(
+            Utf8StringView to_replace,
+            Utf8StringView replacement,
+            ConstIterator const& start,
+            MaxReplacementCount max_num_replacements
+        ) const; // clang-format on
+
+        // clang-format off
+        [[nodiscard]] Utf8String replace(
+            Utf8StringView const to_replace,
+            Utf8StringView const replacement
+        ) const { // clang-format on
+            return replace(
+                    to_replace,
+                    replacement,
+                    cbegin(),
+                    MaxReplacementCount{ std::numeric_limits<std::underlying_type_t<MaxReplacementCount>>::max() }
+            );
+        }
+
+        // clang-format off
+        [[nodiscard]] Utf8String replace(
+            Utf8StringView const to_replace,
+            Utf8StringView const replacement,
+            ConstIterator const& start
+        ) const { // clang-format on
+            return replace(
+                    to_replace,
+                    replacement,
+                    start,
+                    MaxReplacementCount{ std::numeric_limits<std::underlying_type_t<MaxReplacementCount>>::max() }
+            );
+        }
+
+        // clang-format off
+        [[nodiscard]] Utf8String replace(
+            Utf8StringView const to_replace,
+            Utf8StringView const replacement,
+            MaxReplacementCount const max_num_replacements
+        ) const { // clang-format on
+            return replace(to_replace, replacement, cbegin(), max_num_replacements);
         }
     };
 
