@@ -191,4 +191,66 @@ namespace c2k {
         result.push_back(substring(last_iterator));
         return result;
     }
+
+    [[nodiscard]] Utf8String Utf8StringView::replace(
+            Utf8StringView const to_replace,
+            Utf8StringView const replacement,
+            ConstIterator const& start,
+            MaxReplacementCount const max_num_replacements
+    ) const {
+        if (std::to_underlying(max_num_replacements) == 0) {
+            return *this;
+        }
+
+        if (start == cend()) {
+            if (to_replace.is_empty()) {
+                return replacement;
+            }
+            return *this;
+        }
+
+        if (to_replace.is_empty()) {
+            auto result = Utf8String{};
+            result += replacement;
+            for (auto const c : *this) {
+                result += c;
+                result += replacement;
+            }
+            return result;
+        }
+
+        auto current = find(to_replace, start);
+        if (current == cend()) {
+            return *this;
+        }
+        auto result = Utf8String{};
+        auto num_replacements = std::underlying_type_t<decltype(max_num_replacements)>{ 0 };
+        auto previous = cbegin();
+        while (current != cend()) {
+            if (current != previous) {
+                result += Utf8StringView{ previous, current };
+            }
+            result += replacement;
+            ++num_replacements;
+            current += static_cast<ConstIterator::difference_type>(to_replace.calculate_char_count());
+            previous = current;
+            if (current == cend()) {
+                break;
+            }
+            if (num_replacements >= std::to_underlying(max_num_replacements)) {
+                result += Utf8StringView{ current, cend() };
+                break;
+            }
+            current = find(to_replace, current);
+            if (current == cend()) {
+                result += Utf8StringView{ previous, cend() };
+                break;
+            }
+        }
+        if (current != cend() and num_replacements < std::to_underlying(max_num_replacements)) {
+            result += Utf8StringView{ current, cend() };
+        }
+
+        return result;
+    }
 } // namespace c2k

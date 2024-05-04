@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../concepts.hpp"
+#include "../string_utils.hpp"
 #include "char.hpp"
 #include "const_iterator.hpp"
 #include "const_reverse_iterator.hpp"
@@ -177,6 +178,30 @@ namespace c2k {
         }
 
         [[nodiscard]] std::vector<Utf8String> split(Utf8StringView delimiter) const;
+
+        // clang-format off
+        [[nodiscard]] Utf8String replace(
+            Utf8StringView to_replace,
+            Utf8StringView replacement,
+            ConstIterator const& start,
+            MaxReplacementCount max_num_replacements
+        ) const; // clang-format on
+
+        [[nodiscard]] Utf8String replace(Utf8StringView to_replace, Utf8StringView replacement) const;
+
+        // clang-format off
+        [[nodiscard]] Utf8String replace(
+            Utf8StringView to_replace,
+            Utf8StringView replacement,
+            ConstIterator const& start
+        ) const;
+
+        [[nodiscard]] Utf8String replace(
+            Utf8StringView to_replace,
+            Utf8StringView replacement,
+            MaxReplacementCount max_num_replacements
+        ) const;
+        // clang-format on
 
         friend std::ostream& operator<<(std::ostream& os, Utf8String const& string) {
             return os << string.m_data;

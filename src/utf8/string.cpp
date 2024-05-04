@@ -282,4 +282,38 @@ namespace c2k {
         }
         return result;
     }
+
+    [[nodiscard]] Utf8String Utf8String::replace(
+            Utf8StringView const to_replace,
+            Utf8StringView const replacement,
+            ConstIterator const& start,
+            MaxReplacementCount const max_num_replacements
+    ) const {
+        return Utf8StringView{ *this }.replace(to_replace, replacement, start, max_num_replacements);
+    }
+
+    // clang-format off
+    [[nodiscard]] Utf8String Utf8String::replace(
+        Utf8StringView const to_replace,
+        Utf8StringView const replacement
+    ) const { // clang-format on
+        return Utf8StringView{ *this }.replace(to_replace, replacement);
+    }
+
+    // clang-format off
+    [[nodiscard]] Utf8String Utf8String::replace(
+        Utf8StringView const to_replace,
+        Utf8StringView const replacement,
+        ConstIterator const& start
+    ) const { // clang-format on
+        return Utf8StringView{ *this }.replace(to_replace, replacement, start);
+    }
+
+    [[nodiscard]] Utf8String Utf8String::replace(
+            Utf8StringView const to_replace,
+            Utf8StringView const replacement,
+            MaxReplacementCount const max_num_replacements
+    ) const {
+        return Utf8StringView{ *this }.replace(to_replace, replacement, max_num_replacements);
+    }
 } // namespace c2k
