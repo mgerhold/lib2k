@@ -18,6 +18,17 @@ TEST(Synchronized, CreateInstances) {
             Synchronized{ std::make_unique<std::string>("this is a test string for testing purposes") };
 }
 
+TEST(Synchronized, DefaultConstructor) {
+    [[maybe_unused]] auto s1 = Synchronized<int>{};
+    static_assert(std::default_initializable<Synchronized<int>>);
+
+    struct S {
+        S() = delete;
+    };
+
+    static_assert(not std::default_initializable<Synchronized<S>>);
+}
+
 TEST(Synchronized, LockModifyRead) {
     auto s = Synchronized{ 42 };
     auto const first = s.apply(std::identity{});
