@@ -19,6 +19,7 @@ add_test_executable(synchronized_tests)
 add_test_executable(non_null_owner_tests)
 add_test_executable(unique_value_tests)
 add_test_executable(static_vector_tests)
+add_test_executable(static_string_tests)
 
 add_executable(utf8_tests
         utf8/utf8char_tests.cpp

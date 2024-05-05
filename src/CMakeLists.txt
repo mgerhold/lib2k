@@ -25,6 +25,7 @@ add_library(lib2k
         utf8/const_iterator.cpp
         include/lib2k/utf8/const_reverse_iterator.hpp
         utf8/const_reverse_iterator.cpp
+        include/lib2k/static_string.hpp
 )
 
 target_include_directories(lib2k PUBLIC include)
