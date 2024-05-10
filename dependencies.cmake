@@ -19,6 +19,7 @@ function(lib2k_setup_dependencies)
             VERSION 2.9.0
             OPTIONS
             "UTF8PROC_INSTALL OFF"
+            "BUILD_SHARED_LIBS OFF"
     )
 
     if (${lib2k_build_tests})

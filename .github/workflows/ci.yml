@@ -64,6 +64,8 @@ jobs:
         run: sudo sysctl vm.mmap_rnd_bits=28
       - name: Build
         run: cmake --build build
+      - name: Install
+        run: cmake --install build --prefix install
       - name: Run Tests
         run: ctest --test-dir build --verbose --output-on-failure
 
@@ -87,5 +89,7 @@ jobs:
         run: cmake -B build -G "Ninja" -DCMAKE_CXX_STANDARD=23 -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
       - name: Build with Ninja
         run: cmake --build build
+      - name: Install
+        run: cmake --install build --prefix install
       - name: Run Tests
         run: ctest --test-dir build --verbose --output-on-failure
