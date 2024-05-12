@@ -9,9 +9,7 @@ namespace c2k {
     concept IsOneOf = (std::same_as<T, Args> || ...);
 
     template<typename F, typename Result, typename... Args>
-    concept Invocable = requires(F&& f, Result&& result, Args&&... args) {
-        { f(std::forward<Args>(args)...) } -> std::convertible_to<Result>;
-    };
+    concept Invocable = std::is_invocable_r_v<Result, F, Args...>;
 
     template<typename T, typename Element>
     concept Iterable = requires(T&& iterable) {
