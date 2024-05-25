@@ -56,6 +56,15 @@ namespace c2k {
         return Utf8Char{ codepoint };
     }
 
+    [[nodiscard]] tl::expected<Utf8Char, Utf8Error> Utf8Char::from_codepoint(std::int32_t const codepoint) {
+        static_assert(std::same_as<std::remove_const_t<decltype(codepoint)>, utf8proc_int32_t>);
+        auto const result = to_utf8char(codepoint);
+        if (result.m_codepoint.empty()) {
+            return tl::unexpected{ Utf8Error::InvalidUtf8Char };
+        }
+        return result;
+    }
+
     [[nodiscard]] bool Utf8Char::is_uppercase() const {
         return utf8proc_isupper(to_utf8proc_codepoint(m_codepoint)) == 1;
     }

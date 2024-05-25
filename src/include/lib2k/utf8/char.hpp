@@ -3,6 +3,7 @@
 #include "../static_vector.hpp"
 #include "errors.hpp"
 #include <cassert>
+#include <cstdint>
 #include <iostream>
 #include <span>
 #include <tl/expected.hpp>
@@ -48,6 +49,8 @@ namespace c2k {
         }
 
         [[nodiscard]] static tl::expected<Utf8Char, Utf8Error> from_bytes(std::span<std::byte const> bytes);
+
+        [[nodiscard]] static tl::expected<Utf8Char, Utf8Error> from_codepoint(std::int32_t codepoint);
 
         [[nodiscard]] bool constexpr operator==(Utf8Char const& other) const = default;
 

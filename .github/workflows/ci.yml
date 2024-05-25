@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         include:
@@ -28,23 +28,23 @@ jobs:
               sudo apt update
               sudo apt install -y g++-13
             build-type: Release
-          - compiler-name: Clang 17
-            cc: clang-17
-            cxx: clang++-17
+          - compiler-name: Clang 18
+            cc: clang-18
+            cxx: clang++-18
             install-script: |
               wget https://apt.llvm.org/llvm.sh
               chmod +x llvm.sh
-              sudo ./llvm.sh 17
-              sudo apt install libstdc++-12-dev
+              sudo ./llvm.sh 18
+              sudo apt install libstdc++-13-dev
             build-type: Debug
-          - compiler-name: Clang 17
-            cc: clang-17
-            cxx: clang++-17
+          - compiler-name: Clang 18
+            cc: clang-18
+            cxx: clang++-18
             install-script: |
               wget https://apt.llvm.org/llvm.sh
               chmod +x llvm.sh
-              sudo ./llvm.sh 17
-              sudo apt install libstdc++-12-dev
+              sudo ./llvm.sh 18
+              sudo apt install libstdc++-13-dev
             build-type: Release
 
     steps:

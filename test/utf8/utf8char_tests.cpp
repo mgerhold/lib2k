@@ -33,6 +33,12 @@ TEST(Utf8CharTests, FromBytes) {
     // clang-format on
 }
 
+TEST(Utf8CharTests, FromCodepoint) {
+    EXPECT_EQ(Utf8Char::from_codepoint(97).value(), "a"_utf8.front());
+    EXPECT_EQ(Utf8Char::from_codepoint(228).value(), "ä"_utf8.front());
+    EXPECT_EQ(Utf8Char::from_codepoint(129408).value(), "🦀"_utf8.front());
+}
+
 TEST(Utf8CharTests, IsUppercase) {
     EXPECT_TRUE('A'_utf8.is_uppercase());
     EXPECT_TRUE("Ä"_utf8.cbegin()->is_uppercase());
