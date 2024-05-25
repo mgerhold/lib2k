@@ -3,6 +3,7 @@
 #include "../static_vector.hpp"
 #include "errors.hpp"
 #include <cassert>
+#include <cstdint>
 #include <iostream>
 #include <span>
 #include <tl/expected.hpp>
