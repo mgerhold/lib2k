@@ -39,13 +39,24 @@ namespace c2k {
         Random();
         explicit Random(Seed seed);
 
-        template<UniformIntDistributionType T>
-        [[nodiscard]] auto next_integral() {
+        template<typename T>
+        [[nodiscard]] auto next_integral()
+            requires(UniformIntDistributionType<T>)
+        {
             return std::uniform_int_distribution<T>{}(m_generator);
         }
 
-        template<UniformIntDistributionType T>
-        [[nodiscard]] auto next_integral(T const max_exclusive) {
+        template<typename T>
+        [[nodiscard]] auto next_integral()
+            requires(std::same_as<T, std::uint8_t>)
+        {
+            return static_cast<std::uint8_t>(std::uniform_int_distribution{ 0, 255 }(m_generator));
+        }
+
+        template<typename T>
+        [[nodiscard]] auto next_integral(T const max_exclusive)
+            requires(UniformIntDistributionType<T>)
+        {
             if (max_exclusive <= T{ 0 }) {
                 throw std::invalid_argument{
                     std::format("'{}' is not a valid upper bound (must be greater than 0)", max_exclusive)
@@ -54,8 +65,17 @@ namespace c2k {
             return next_integral(T{ 0 }, max_exclusive);
         }
 
-        template<UniformIntDistributionType T>
-        [[nodiscard]] auto next_integral(T const min_inclusive, T const max_exclusive) {
+        template<typename T>
+        [[nodiscard]] auto next_integral(T const max_exclusive)
+            requires(std::same_as<T, std::uint8_t>)
+        {
+            return next_integral<std::uint8_t>(std::uint8_t{ 0 }, max_exclusive);
+        }
+
+        template<typename T>
+        [[nodiscard]] auto next_integral(T const min_inclusive, T const max_exclusive)
+            requires(UniformIntDistributionType<T>)
+        {
             if (max_exclusive <= min_inclusive) {
                 throw std::invalid_argument{
                     std::format("upper bound {} must be greater than lower bound {}", max_exclusive, min_inclusive)
@@ -65,20 +85,35 @@ namespace c2k {
                                                      static_cast<T>(max_exclusive - T{ 1 }) }(m_generator);
         }
 
+        template<typename T>
+        [[nodiscard]] auto next_integral(T const min_inclusive, T const max_exclusive)
+            requires(std::same_as<T, std::uint8_t>)
+        {
+            static_assert(sizeof(T) == sizeof(std::uint8_t));
+            static_assert(sizeof(T) == sizeof(std::byte));
+            if (max_exclusive <= min_inclusive) {
+                throw std::invalid_argument{
+                    std::format("upper bound {} must be greater than lower bound {}", max_exclusive, min_inclusive)
+                };
+            }
+            return static_cast<std::uint8_t>(next_byte());
+        }
+
         [[nodiscard]] auto next_bool() {
             return static_cast<bool>(std::uniform_int_distribution{ 0, 1 }(m_generator));
         }
 
         [[nodiscard]] auto next_byte() {
+            static_assert(sizeof(std::uint8_t) == sizeof(std::byte));
             return static_cast<std::byte>(std::uniform_int_distribution{
                     0,
-                    static_cast<int>(std::numeric_limits<std::byte>::max()),
+                    static_cast<int>(std::numeric_limits<std::uint8_t>::max()),
             }(m_generator));
         }
 
         [[nodiscard]] auto next_char() {
             return static_cast<char>(std::uniform_int_distribution{
-                    0,
+                    static_cast<int>(std::numeric_limits<char>::min()),
                     static_cast<int>(std::numeric_limits<char>::max()),
             }(m_generator));
         }
