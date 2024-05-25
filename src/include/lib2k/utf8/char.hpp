@@ -49,6 +49,8 @@ namespace c2k {
 
         [[nodiscard]] static tl::expected<Utf8Char, Utf8Error> from_bytes(std::span<std::byte const> bytes);
 
+        [[nodiscard]] static tl::expected<Utf8Char, Utf8Error> from_codepoint(std::int32_t codepoint);
+
         [[nodiscard]] bool constexpr operator==(Utf8Char const& other) const = default;
 
         [[nodiscard]] bool is_uppercase() const;
