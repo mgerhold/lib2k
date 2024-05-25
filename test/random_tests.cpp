@@ -153,6 +153,51 @@ TEST(RandomTests, Byte) {
         [[maybe_unused]] auto const value = random.next_byte();
         static_assert(std::same_as<std::remove_cvref_t<decltype(value)>, std::byte>);
     }
+    while (true) {
+        auto const value = random.next_byte();
+        if (static_cast<int>(value) == 0) {
+            break;
+        }
+    }
+    while (true) {
+        auto const value = random.next_byte();
+        if (static_cast<int>(value) == 255) {
+            break;
+        }
+    }
+    while (true) {
+        auto const value = random.next_byte();
+        if (static_cast<int>(value) == 42) {
+            break;
+        }
+    }
+}
+
+TEST(RandomTests, Unsigned8) {
+    using c2k::Random;
+    auto random = Random{};
+    for (auto i = 0; i < 1000000; ++i) {
+        [[maybe_unused]] auto const value = random.next_integral<std::uint8_t>();
+        static_assert(std::same_as<std::remove_cvref_t<decltype(value)>, std::uint8_t>);
+    }
+    while (true) {
+        auto const value = random.next_byte();
+        if (static_cast<int>(value) == 0) {
+            break;
+        }
+    }
+    while (true) {
+        auto const value = random.next_byte();
+        if (static_cast<int>(value) == 255) {
+            break;
+        }
+    }
+    while (true) {
+        auto const value = random.next_byte();
+        if (static_cast<int>(value) == 42) {
+            break;
+        }
+    }
 }
 
 TEST(RandomTests, Char) {
@@ -162,6 +207,30 @@ TEST(RandomTests, Char) {
         [[maybe_unused]] auto const value = random.next_char();
         static_assert(std::same_as<std::remove_cvref_t<decltype(value)>, char>);
     }
+    while (true) {
+        auto const value = random.next_char();
+        if (value == std::numeric_limits<char>::max()) {
+            break;
+        }
+    }
+    while (true) {
+        auto const value = random.next_char();
+        if (value == std::numeric_limits<char>::min()) {
+            break;
+        }
+    }
+    while (true) {
+        auto const value = random.next_char();
+        if (value == 'a') {
+            break;
+        }
+    }
+    while (true) {
+        auto const value = random.next_char();
+        if (value == '\n') {
+            break;
+        }
+    }
 }
 
 TEST(RandomTests, Bool) {
@@ -170,6 +239,18 @@ TEST(RandomTests, Bool) {
     for (auto i = 0; i < 1000000; ++i) {
         [[maybe_unused]] auto const value = random.next_bool();
         static_assert(std::same_as<std::remove_cvref_t<decltype(value)>, bool>);
+    }
+    while (true) {
+        auto const value = random.next_bool();
+        if (value) {
+            break;
+        }
+    }
+    while (true) {
+        auto const value = random.next_bool();
+        if (not value) {
+            break;
+        }
     }
 }
 
@@ -182,6 +263,12 @@ TEST(RandomTests, Float) {
         EXPECT_GE(value, 0.0f);
         EXPECT_LE(value, 1.0f);
     }
+    while (true) {
+        auto const value = random.next_float();
+        if (value >= 0.5f and value <= 0.6f) {
+            break;
+        }
+    }
 }
 
 TEST(RandomTests, Double) {
@@ -192,6 +279,12 @@ TEST(RandomTests, Double) {
         static_assert(std::same_as<std::remove_cvref_t<decltype(value)>, double>);
         EXPECT_GE(value, 0.0);
         EXPECT_LE(value, 1.0);
+    }
+    while (true) {
+        auto const value = random.next_double();
+        if (value >= 0.5 and value <= 0.6) {
+            break;
+        }
     }
 }
 
