@@ -282,7 +282,7 @@ TEST(RandomTests, Double) {
     }
     while (true) {
         auto const value = random.next_double();
-        if (value >= 0.5f and value <= 0.6f) {
+        if (value >= 0.5 and value <= 0.6) {
             break;
         }
     }

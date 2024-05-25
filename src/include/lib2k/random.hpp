@@ -85,6 +85,14 @@ namespace c2k {
                                                      static_cast<T>(max_exclusive - T{ 1 }) }(m_generator);
         }
 
+        [[nodiscard]] auto next_byte() {
+            static_assert(sizeof(std::uint8_t) == sizeof(std::byte));
+            return static_cast<std::byte>(std::uniform_int_distribution{
+                    0,
+                    static_cast<int>(std::numeric_limits<std::uint8_t>::max()),
+            }(m_generator));
+        }
+
         template<typename T>
         [[nodiscard]] auto next_integral(T const min_inclusive, T const max_exclusive)
             requires(std::same_as<T, std::uint8_t>)
@@ -101,14 +109,6 @@ namespace c2k {
 
         [[nodiscard]] auto next_bool() {
             return static_cast<bool>(std::uniform_int_distribution{ 0, 1 }(m_generator));
-        }
-
-        [[nodiscard]] auto next_byte() {
-            static_assert(sizeof(std::uint8_t) == sizeof(std::byte));
-            return static_cast<std::byte>(std::uniform_int_distribution{
-                    0,
-                    static_cast<int>(std::numeric_limits<std::uint8_t>::max()),
-            }(m_generator));
         }
 
         [[nodiscard]] auto next_char() {
