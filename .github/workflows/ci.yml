@@ -35,7 +35,7 @@ jobs:
               wget https://apt.llvm.org/llvm.sh
               chmod +x llvm.sh
               sudo ./llvm.sh 18
-              sudo apt install libstdc++-13-dev
+              sudo apt install libstdc++-12-dev
             build-type: Debug
           - compiler-name: Clang 18
             cc: clang-18
@@ -44,7 +44,7 @@ jobs:
               wget https://apt.llvm.org/llvm.sh
               chmod +x llvm.sh
               sudo ./llvm.sh 18
-              sudo apt install libstdc++-13-dev
+              sudo apt install libstdc++-12-dev
             build-type: Release
 
     steps:
