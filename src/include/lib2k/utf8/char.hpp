@@ -52,6 +52,13 @@ namespace c2k {
 
         [[nodiscard]] static tl::expected<Utf8Char, Utf8Error> from_codepoint(std::int32_t codepoint);
 
+        [[nodiscard]] std::string_view as_string_view() const {
+            return std::string_view{
+                reinterpret_cast<char const*>(m_codepoint.data()),
+                reinterpret_cast<char const*>(m_codepoint.data() + m_codepoint.size()),
+            };
+        }
+
         [[nodiscard]] bool constexpr operator==(Utf8Char const& other) const = default;
 
         [[nodiscard]] bool is_uppercase() const;
