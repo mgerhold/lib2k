@@ -45,6 +45,10 @@ namespace c2k {
             return m_data.data();
         }
 
+        [[nodiscard]] std::size_t num_bytes() const {
+            return m_data.size();
+        }
+
         [[nodiscard]] std::size_t calculate_char_count() const {
             return static_cast<std::size_t>(cend() - cbegin());
         }
