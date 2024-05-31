@@ -1,5 +1,7 @@
+#include <array>
 #include <gtest/gtest.h>
 #include <lib2k/random.hpp>
+#include <span>
 #include <vector>
 
 TEST(RandomTests, SameSeedProducesSameResults) {
@@ -400,4 +402,64 @@ TEST(RandomTest, BytesVector) {
     perform_no_zero_test(8);
     perform_no_zero_test(9);
     perform_no_zero_test(1024);
+}
+
+TEST(RandomTest, Shuffle) {
+    using c2k::Random;
+    auto random = Random{};
+    auto vec = std::vector{ 42, 13, 8, -2, 12, -17 };
+    while (true) {
+        random.shuffle(vec);
+        if (vec == std::vector{ 12, -2, 42, -17, 8, 13 }) {
+            break;
+        }
+    }
+
+    auto array = std::array{ 42, 13, 8, -2, 12, -17 };
+    while (true) {
+        random.shuffle(array);
+        if (array == std::array{ 12, -2, 42, -17, 8, 13 }) {
+            break;
+        }
+    }
+
+    int c_array[] = { 42, 13, 8, -2, 12, -17 };
+    while (true) {
+        random.shuffle(c_array);
+        if (std::vector(c_array, c_array + std::size(c_array)) == std::vector{ 12, -2, 42, -17, 8, 13 }) {
+            break;
+        }
+    }
+}
+
+TEST(RandomTest, Choice) {
+    using c2k::Random;
+    auto random = Random{};
+
+    auto const vec = std::vector{ 42, 13, 8, -2, 12, -17 };
+    for (auto const value : vec) {
+        while (true) {
+            if (random.choice(vec) == value) {
+                break;
+            }
+        }
+    }
+
+    auto const array = std::array{ 42, 13, 8, -2, 12, -17 };
+    for (auto const value : vec) {
+        while (true) {
+            if (random.choice(array) == value) {
+                break;
+            }
+        }
+    }
+
+    auto const c_array = std::array{ 42, 13, 8, -2, 12, -17 };
+    for (auto const value : vec) {
+        while (true) {
+            if (random.choice(c_array) == value) {
+                break;
+            }
+        }
+    }
 }

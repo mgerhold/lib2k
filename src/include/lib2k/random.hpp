@@ -144,6 +144,16 @@ namespace c2k {
 
         [[nodiscard]] std::vector<std::byte> bytes_vector(std::size_t size);
 
+        void shuffle(auto& iterable) { // todo: use a concept here
+            std::shuffle(std::begin(iterable), std::end(iterable), m_generator);
+        }
+
+        [[nodiscard]] decltype(auto) choice(auto&& iterable) {
+            auto const size = static_cast<std::size_t>(std::distance(std::cbegin(iterable), std::cend(iterable)));
+            auto const index = next_integral(size);
+            return iterable[index];
+        }
+
         [[nodiscard]] State state() const;
 
         void state(State const& new_state);
