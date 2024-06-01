@@ -1,10 +1,10 @@
 #pragma once
 
+#include "concepts.hpp"
 #include <algorithm>
 #include <array>
 #include <cstring>
 #include <format>
-#include <lib2k/concepts.hpp>
 #include <random>
 #include <vector>
 
