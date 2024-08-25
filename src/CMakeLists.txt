@@ -32,6 +32,7 @@ target_sources(lib2k
         include/lib2k/utf8/const_iterator.hpp
         include/lib2k/utf8/const_reverse_iterator.hpp
         include/lib2k/static_string.hpp
+        include/lib2k/defer.hpp
 )
 
 target_include_directories(
