@@ -39,6 +39,12 @@ TEST(Utf8CharTests, FromCodepoint) {
     EXPECT_EQ(Utf8Char::from_codepoint(129408).value(), "🦀"_utf8.front());
 }
 
+TEST(Utf8CharTests, Codepoint) {
+    EXPECT_EQ("a"_utf8.front().codepoint(), 97);
+    EXPECT_EQ("ä"_utf8.front().codepoint(), 228);
+    EXPECT_EQ("🦀"_utf8.front().codepoint(), 129408);
+}
+
 TEST(Utf8CharTests, IsUppercase) {
     EXPECT_TRUE('A'_utf8.is_uppercase());
     EXPECT_TRUE("Ä"_utf8.cbegin()->is_uppercase());

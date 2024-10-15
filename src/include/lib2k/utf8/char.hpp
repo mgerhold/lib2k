@@ -59,6 +59,8 @@ namespace c2k {
             };
         }
 
+        [[nodiscard]] std::int32_t codepoint() const;
+
         [[nodiscard]] bool constexpr operator==(Utf8Char const& other) const = default;
 
         [[nodiscard]] bool is_uppercase() const;
