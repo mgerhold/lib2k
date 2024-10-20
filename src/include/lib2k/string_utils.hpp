@@ -93,7 +93,7 @@ namespace c2k {
     }
 
     void trim(std::string& s, Predicate<bool, char> auto&& predicate) {
-        left_trim(s, std::forward<decltype(predicate)>(predicate));
+        left_trim(s, predicate);
         right_trim(s, std::forward<decltype(predicate)>(predicate));
     }
 
