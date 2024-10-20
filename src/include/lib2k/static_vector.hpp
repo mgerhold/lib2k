@@ -145,6 +145,17 @@ namespace c2k {
             ++m_size;
         }
 
+        constexpr T pop_back() {
+            auto result = std::move(back());
+            --m_size;
+            return result;
+        }
+
+        constexpr void clear() {
+            m_data = {};
+            m_size = 0;
+        }
+
         [[nodiscard]] constexpr bool operator==(StaticVector const& other) const {
             if (size() != other.size()) {
                 return false;

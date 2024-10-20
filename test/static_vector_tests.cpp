@@ -93,6 +93,28 @@ TEST(StaticVectorTests, PushBack) {
     EXPECT_FALSE(vector3.empty());
 }
 
+TEST(StaticVectorTests, PopBack) {
+    auto vector = generate_vector<20>();
+    EXPECT_EQ(vector.size(), 20);
+    EXPECT_EQ(vector.back(), 20);
+    EXPECT_EQ(vector.pop_back(), 20);
+    EXPECT_EQ(vector.size(), 19);
+    EXPECT_EQ(vector.back(), 19);
+
+    auto vector2 = StaticVector<int, 1>{ 42 };
+    EXPECT_EQ(vector2.size(), 1);
+    EXPECT_EQ(vector2.pop_back(), 42);
+    EXPECT_TRUE(vector2.empty());
+    EXPECT_THROW(vector2.pop_back(), std::out_of_range);
+}
+
+TEST(StaticVectorTests, Clear) {
+    auto vector = StaticVector<int, 4>{ 1, 2, 3, 4 };
+    vector.clear();
+    EXPECT_EQ(vector.size(), 0);
+    EXPECT_TRUE(vector.empty());
+}
+
 struct Person {
     std::string name;
     int age;
