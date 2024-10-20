@@ -2,8 +2,10 @@
 
 #include <algorithm>
 #include <cctype>
+#include <charconv>
 #include <concepts>
 #include <limits>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -249,5 +251,28 @@ namespace c2k {
     ) { // clang-format on
         right_pad(string, target_length, padding_char);
         return string;
+    }
+
+    template<std::integral T>
+    [[nodiscard]] constexpr std::optional<T> parse(std::string_view const s, int const base = 10) {
+        if (base < 2 or base > 36) {
+            return std::nullopt;
+        }
+        auto result = T{};
+        auto const [pointer, errc] = std::from_chars(s.data(), s.data() + s.length(), result, base);
+        if (pointer != s.data() + s.length() or errc != std::errc{}) {
+            return std::nullopt;
+        }
+        return result;
+    }
+
+    template<std::floating_point T>
+    [[nodiscard]] constexpr std::optional<T> parse(std::string_view const s) {
+        auto result = T{};
+        auto const [pointer, errc] = std::from_chars(s.data(), s.data() + s.length(), result);
+        if (pointer != s.data() + s.length() or errc != std::errc{}) {
+            return std::nullopt;
+        }
+        return result;
     }
 } // namespace c2k

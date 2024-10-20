@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <lib2k/string_utils.hpp>
+#include <limits>
 
 TEST(StringUtilsTests, RegularLeftTrim) {
     using c2k::left_trim;
@@ -592,4 +593,62 @@ TEST(StringUtilsTests, RightPadded) {
     EXPECT_EQ(right_padded("", 0), "");
     EXPECT_EQ(right_padded("", 3), "   ");
     EXPECT_EQ(right_padded("   ", 5, '@'), "   @@");
+}
+
+TEST(StringUtilsTests, Parse) {
+    using c2k::parse;
+    EXPECT_EQ(0, parse<int>("0"));
+    EXPECT_EQ(-42, parse<int>("-42"));
+    EXPECT_EQ(42, parse<int>("42"));
+    EXPECT_EQ(42, parse<int>("42", 10));
+    EXPECT_EQ(0x42, parse<int>("42", 16));
+    EXPECT_EQ(042, parse<int>("42", 8));
+    EXPECT_FALSE(parse<int>("abc"));
+    EXPECT_FALSE(parse<int>("42abc"));
+    EXPECT_FALSE(parse<int>("42", 2));
+    EXPECT_FALSE(parse<int>("42", 0));
+    EXPECT_DOUBLE_EQ(3.14, parse<double>("3.14").value());
+    EXPECT_FLOAT_EQ(3.14f, parse<float>("3.14").value());
+
+    EXPECT_EQ(std::numeric_limits<int>::max(), parse<int>(std::to_string(std::numeric_limits<int>::max())));
+    EXPECT_EQ(std::numeric_limits<int>::min(), parse<int>(std::to_string(std::numeric_limits<int>::min())));
+    EXPECT_EQ(
+            std::numeric_limits<unsigned int>::max(),
+            parse<unsigned int>(std::to_string(std::numeric_limits<unsigned int>::max()))
+    );
+
+    EXPECT_FALSE(parse<int>(std::to_string(std::numeric_limits<int>::max()) + "0").has_value());
+    EXPECT_FALSE(parse<int>(std::to_string(std::numeric_limits<int>::min()) + "0").has_value());
+
+    EXPECT_DOUBLE_EQ(-3.14, parse<double>("-3.14").value());
+    EXPECT_FLOAT_EQ(-3.14f, parse<float>("-3.14").value());
+
+    EXPECT_DOUBLE_EQ(1e30, parse<double>("1e30").value());
+    EXPECT_DOUBLE_EQ(1e-30, parse<double>("1e-30").value());
+
+    EXPECT_FALSE(parse<double>("abc"));
+    EXPECT_FALSE(parse<double>("3.14abc"));
+
+    EXPECT_FALSE(parse<int>("42", 1).has_value());  // Base 1 is invalid
+    EXPECT_FALSE(parse<int>("42", 37).has_value()); // Base 37 is invalid (only up to base 36)
+
+    EXPECT_EQ(10, parse<int>("a", 16));
+    EXPECT_EQ(10, parse<int>("A", 16));
+    EXPECT_FALSE(parse<int>("g", 16).has_value()); // 'g' is invalid in base 16
+    EXPECT_EQ(35, parse<int>("z", 36));
+    EXPECT_FALSE(parse<int>("1z", 10).has_value()); // 'z' is invalid in base 10
+
+    EXPECT_FALSE(parse<int>("").has_value());
+    EXPECT_FALSE(parse<double>("").has_value());
+
+    EXPECT_FALSE(parse<int>("   ").has_value());
+    EXPECT_FALSE(parse<double>("   ").has_value());
+
+    EXPECT_FALSE(parse<int>(" 42").has_value());
+    EXPECT_FALSE(parse<int>("42 ").has_value());
+    EXPECT_FALSE(parse<double>(" 3.14").has_value());
+    EXPECT_FALSE(parse<double>("3.14 ").has_value());
+
+    EXPECT_FALSE(parse<int>("4two").has_value());
+    EXPECT_FALSE(parse<double>("3.14xyz").has_value());
 }
