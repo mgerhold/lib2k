@@ -9,7 +9,7 @@ namespace c2k {
     class InsufficientCapacity final : public std::runtime_error {
     public:
         explicit InsufficientCapacity(std::size_t const capacity)
-            : std::runtime_error{ std::format("insufficient capacity '{}'", capacity) } {}
+            : std::runtime_error{ std::format("insufficient capacity '{}'", capacity) } { }
     };
 
     template<typename T, std::size_t max_capacity>
