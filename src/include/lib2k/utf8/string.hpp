@@ -45,6 +45,10 @@ namespace c2k {
             return m_data.data();
         }
 
+        [[nodiscard]] std::string_view view() const {
+            return std::string_view{ m_data };
+        }
+
         [[nodiscard]] std::size_t num_bytes() const {
             return m_data.size();
         }
@@ -212,3 +216,10 @@ namespace c2k {
         }
     };
 } // namespace c2k
+
+template<>
+struct std::hash<c2k::Utf8String> {
+    [[nodiscard]] std::size_t operator()(c2k::Utf8String const& view) const noexcept {
+        return std::hash<std::string_view>{}(view.view());
+    }
+};

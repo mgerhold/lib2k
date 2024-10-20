@@ -6,6 +6,7 @@
 #include "const_reverse_iterator.hpp"
 #include "string.hpp"
 #include <string_view>
+#include <unordered_map>
 
 namespace c2k {
     class Utf8String;
@@ -35,6 +36,10 @@ namespace c2k {
 
         [[nodiscard]] constexpr bool is_empty() const {
             return m_view.empty();
+        }
+
+        [[nodiscard]] std::string_view view() const {
+            return m_view;
         }
 
         [[nodiscard]] std::size_t num_bytes() const {
@@ -172,3 +177,10 @@ namespace c2k {
         [[nodiscard]] Utf8StringView operator""_utf8view(char const* str, std::size_t length);
     }
 } // namespace c2k
+
+template<>
+struct std::hash<c2k::Utf8StringView> {
+    [[nodiscard]] std::size_t operator()(c2k::Utf8StringView const& view) const noexcept {
+        return std::hash<std::string_view>{}(view.view());
+    }
+};
