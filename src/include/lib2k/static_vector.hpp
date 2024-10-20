@@ -41,11 +41,11 @@ namespace c2k {
             return max_capacity;
         }
 
-        [[nodiscard]] constexpr std::byte const* data() const {
+        [[nodiscard]] constexpr T const* data() const {
             return m_data.data();
         }
 
-        [[nodiscard]] constexpr std::byte* data() {
+        [[nodiscard]] constexpr T* data() {
             return m_data.data();
         }
 
