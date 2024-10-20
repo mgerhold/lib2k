@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <gtest/gtest.h>
 #include <lib2k/utf8.hpp>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 using c2k::Utf8Char;
@@ -345,4 +347,30 @@ TEST(Utf8StringViewTests, Replace) {
     EXPECT_EQ(view.replace("aa", "!", view.cbegin() + 1, MaxReplacementCount{ 2 }), "a!!aa");
     view = "1, 2, 3, 4, 5";
     EXPECT_EQ(view.replace(", ", "\n", view.cbegin() + 2, MaxReplacementCount{ 2 }), "1, 2\n3\n4, 5");
+}
+
+TEST(Tf8StringViewTests, Hashable) {
+    auto set = std::unordered_set<Utf8StringView>{};
+    set.insert("Hello, 🌍!");
+    set.insert("This");
+    set.insert("is");
+    set.insert("a");
+    set.insert("test!");
+    EXPECT_TRUE(set.contains("Hello, 🌍!"));
+    EXPECT_TRUE(set.contains("This"));
+    EXPECT_TRUE(set.contains("is"));
+    EXPECT_TRUE(set.contains("a"));
+    EXPECT_TRUE(set.contains("test!"));
+    EXPECT_FALSE(set.contains("Hello, 🌍"));
+    EXPECT_FALSE(set.contains("This is a test!"));
+
+    auto map = std::unordered_map<Utf8StringView, int>{};
+    map["one"] = 1;
+    map["two"] = 2;
+    map["three"] = 3;
+    map["four"] = 4;
+    EXPECT_EQ(map["one"], 1);
+    EXPECT_EQ(map["two"], 2);
+    EXPECT_EQ(map["three"], 3);
+    EXPECT_EQ(map["four"], 4);
 }
