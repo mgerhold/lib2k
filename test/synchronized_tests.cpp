@@ -42,6 +42,16 @@ TEST(Synchronized, ConstructInPlace) {
     [[maybe_unused]] auto const s = Synchronized<S>{ std::in_place, 42, 3.14, '!' };
 }
 
+template<typename T>
+concept HasClone = requires(T&& t) { t.clone(); };
+
+TEST(Synchronized, Clone) {
+    auto const s1 = Synchronized{ 42 };
+    [[maybe_unused]] auto const copy = s1.clone();
+
+    static_assert(not HasClone<Synchronized<std::unique_ptr<int>>>);
+}
+
 TEST(Synchronized, LockModifyRead) {
     auto s = Synchronized{ 42 };
     auto const first = s.apply(std::identity{});

@@ -40,6 +40,12 @@ namespace c2k {
         template<typename... Args>
         explicit Synchronized(std::in_place_t, Args&&... args) : m_data{ std::forward<Args>(args)... } { }
 
+        [[nodiscard]] Synchronized clone() const
+            requires(std::copy_constructible<T>)
+        {
+            return Synchronized{ m_data };
+        }
+
         /**
          * @brief Applies a function to the synchronized data.
          *
