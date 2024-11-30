@@ -2,6 +2,7 @@
 
 #include <condition_variable>
 #include <mutex>
+#include <utility>
 
 namespace c2k {
     template<typename T>
@@ -35,6 +36,9 @@ namespace c2k {
         Synchronized() requires(std::default_initializable<T>) = default;
         // clang-format on
         explicit Synchronized(T data) : m_data{ std::move(data) } { }
+
+        template<typename... Args>
+        explicit Synchronized(std::in_place_t, Args&&... args) : m_data{ std::forward<Args>(args)... } { }
 
         /**
          * @brief Applies a function to the synchronized data.
