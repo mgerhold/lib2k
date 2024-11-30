@@ -26,7 +26,7 @@ namespace c2k {
      */
     class Synchronized final {
     private:
-        std::recursive_mutex m_mutex;
+        mutable std::recursive_mutex m_mutex;
         T m_data;
 
     public:
