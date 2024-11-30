@@ -122,3 +122,9 @@ TEST(Synchronized, TryLockTwiceFromSameThread) {
     });
     EXPECT_EQ(synchronized.apply(std::identity{}), 45);
 }
+
+TEST(Synchronized, ConstReferenceAccess) {
+    auto const s = Synchronized{ 42 };
+    auto const number = s.apply([](int const& n) { return n; });
+    EXPECT_EQ(number, 42);
+}
