@@ -3,9 +3,17 @@
 #include <algorithm>
 #include <array>
 #include <format>
+#include <memory>
 #include <stdexcept>
+#include <utility>
 
 namespace c2k {
+
+    namespace detail {
+        template<typename T>
+        concept NotDefaultInitializable = not std::default_initializable<T>;
+    } // namespace detail
+
     class InsufficientCapacity final : public std::runtime_error {
     public:
         explicit InsufficientCapacity(std::size_t const capacity)
@@ -15,22 +23,95 @@ namespace c2k {
     template<typename T, std::size_t max_capacity>
     class StaticVector final {
     private:
-        std::array<T, max_capacity> m_data{};
+        // Should not fail for pure standard C++ types, but could fail for types using #pragma pack.
+        static_assert(sizeof(T) % alignof(T) == 0);
+
+        struct TypeErasedStorage final {
+            alignas(T) std::array<char, max_capacity * sizeof(T)> data{};
+        };
+
+        struct TypedStorage final {
+            std::array<T, max_capacity> elements{};
+
+            constexpr ~TypedStorage() noexcept = default;
+        };
+
+        template<typename Contained>
+        struct Storage;
+
+        template<std::default_initializable Contained>
+        struct Storage<Contained> {
+            using type = TypedStorage;
+        };
+
+        template<detail::NotDefaultInitializable Contained>
+        struct Storage<Contained> {
+            using type = TypeErasedStorage;
+        };
+
+        using StorageType = typename Storage<T>::type;
+
+        StorageType m_storage{};
         std::size_t m_size{ 0 };
 
     public:
-        constexpr StaticVector() = default;
+        [[nodiscard]] constexpr StaticVector() = default;
 
-        constexpr StaticVector(std::initializer_list<T> const elements) {
-            if (elements.size() > max_capacity) {
-                throw InsufficientCapacity{ max_capacity };
+        [[nodiscard]] constexpr StaticVector(std::initializer_list<T> const values) {
+            if (values.size() > capacity()) {
+                throw InsufficientCapacity{ capacity() };
             }
-            std::copy(elements.begin(), elements.end(), m_data.begin());
-            m_size = elements.size();
+            for (auto const& value : values) {
+                push_back(value);
+            }
+        }
+
+        [[nodiscard]] constexpr StaticVector(StaticVector const& other) {
+            for (auto const& value : other) {
+                push_back(value);
+            }
+        }
+
+        [[nodiscard]] constexpr StaticVector(StaticVector&& other) noexcept
+            requires std::movable<T>
+        {
+            for (auto& value : other) {
+                push_back(std::move(value));
+            }
+            other.clear();
+        }
+
+        constexpr StaticVector& operator=(StaticVector const& other) {
+            if (this == std::addressof(other)) {
+                return *this;
+            }
+            clear();
+            for (auto& value : other) {
+                push_back(value);
+            }
+            return *this;
+        }
+
+        constexpr StaticVector& operator=(StaticVector&& other) noexcept
+            requires std::movable<T>
+        {
+            if (this == std::addressof(other)) {
+                return *this;
+            }
+            clear();
+            for (auto& value : other) {
+                push_back(std::move(value));
+            }
+            other.clear();
+            return *this;
+        }
+
+        constexpr ~StaticVector() noexcept {
+            clear();
         }
 
         [[nodiscard]] constexpr bool empty() const {
-            return m_size == 0;
+            return size() == 0;
         }
 
         [[nodiscard]] constexpr std::size_t size() const {
@@ -41,20 +122,32 @@ namespace c2k {
             return max_capacity;
         }
 
-        [[nodiscard]] constexpr T const* data() const {
-            return m_data.data();
+        [[nodiscard]] constexpr T const* data() const
+            requires std::default_initializable<T>
+        {
+            return m_storage.elements.data();
         }
 
-        [[nodiscard]] constexpr T* data() {
-            return m_data.data();
+        [[nodiscard]] T const* data() const {
+            return reinterpret_cast<T const*>(m_storage.data.data());
+        }
+
+        [[nodiscard]] constexpr T* data()
+            requires std::default_initializable<T>
+        {
+            return m_storage.elements.data();
+        }
+
+        [[nodiscard]] T* data() {
+            return reinterpret_cast<T*>(m_storage.data.data());
         }
 
         [[nodiscard]] constexpr auto begin() {
-            return m_data.begin();
+            return data();
         }
 
         [[nodiscard]] constexpr auto begin() const {
-            return m_data.begin();
+            return data();
         }
 
         [[nodiscard]] constexpr auto cbegin() const {
@@ -62,11 +155,11 @@ namespace c2k {
         }
 
         [[nodiscard]] constexpr auto end() {
-            return m_data.begin() + size();
+            return begin() + size();
         }
 
         [[nodiscard]] constexpr auto end() const {
-            return m_data.begin() + size();
+            return begin() + size();
         }
 
         [[nodiscard]] constexpr auto cend() const {
@@ -74,11 +167,11 @@ namespace c2k {
         }
 
         [[nodiscard]] constexpr auto rbegin() {
-            return m_data.rbegin();
+            return std::reverse_iterator<T*>{ data() + size() };
         }
 
         [[nodiscard]] constexpr auto rbegin() const {
-            return m_data.rbegin();
+            return std::reverse_iterator<T const*>{ data() + size() };
         }
 
         [[nodiscard]] constexpr auto crbegin() const {
@@ -86,54 +179,70 @@ namespace c2k {
         }
 
         [[nodiscard]] constexpr auto rend() {
-            return m_data.rend();
+            return rbegin() + size();
         }
 
         [[nodiscard]] constexpr auto rend() const {
-            return m_data.rend();
+            return rbegin() + size();
         }
 
         [[nodiscard]] constexpr auto crend() const {
             return rend();
         }
 
-        [[nodiscard]] T const& at(std::size_t const index) const {
-            return m_data.at(index);
+        [[nodiscard]] constexpr T const& at(std::size_t const index) const {
+            if (index >= size()) {
+                throw std::out_of_range{ "index out of range" };
+            }
+
+            return data()[index];
         }
 
-        [[nodiscard]] T& at(std::size_t const index) {
-            return m_data.at(index);
+        [[nodiscard]] constexpr T& at(std::size_t const index) {
+            if (index >= size()) {
+                throw std::out_of_range{ "index out of range" };
+            }
+
+            return data()[index];
         }
 
-        [[nodiscard]] T const& operator[](std::size_t const index) const {
+        [[nodiscard]] constexpr T const& operator[](std::size_t const index) const {
             return at(index);
         }
 
-        [[nodiscard]] T& operator[](std::size_t const index) {
+        [[nodiscard]] constexpr T& operator[](std::size_t const index) {
             return at(index);
         }
 
-        [[nodiscard]] T const& front() const {
+        [[nodiscard]] constexpr T const& front() const {
             return at(0);
         }
 
-        [[nodiscard]] T& front() {
+        [[nodiscard]] constexpr T& front() {
             return at(0);
         }
 
-        [[nodiscard]] T const& back() const {
+        [[nodiscard]] constexpr T const& back() const {
             return at(size() - 1);
         }
 
-        [[nodiscard]] T& back() {
+        [[nodiscard]] constexpr T& back() {
             return at(size() - 1);
         }
 
-        constexpr void push_back(T value) {
+        constexpr void push_back(T const& value) {
             if (m_size >= capacity()) {
                 throw InsufficientCapacity{ capacity() };
             }
-            m_data[m_size] = std::move(value);
+            std::construct_at(&data()[m_size], value);
+            ++m_size;
+        }
+
+        constexpr void push_back(T&& value) {
+            if (m_size >= capacity()) {
+                throw InsufficientCapacity{ capacity() };
+            }
+            std::construct_at(&data()[m_size], std::move(value));
             ++m_size;
         }
 
@@ -141,19 +250,29 @@ namespace c2k {
             if (m_size >= capacity()) {
                 throw InsufficientCapacity{ capacity() };
             }
-            m_data[m_size] = T{ std::forward<decltype(args)>(args)... };
+            std::construct_at(&data()[m_size], std::forward<decltype(args)>(args)...);
             ++m_size;
         }
 
         constexpr T pop_back() {
+            if (empty()) {
+                throw std::out_of_range{ "pop_back on empty vector" };
+            }
             auto result = std::move(back());
+            std::destroy_at(&data()[m_size - 1]);
             --m_size;
             return result;
         }
 
         constexpr void clear() {
-            m_data = {};
-            m_size = 0;
+            if constexpr (std::default_initializable<T>) {
+                m_size = 0;
+            } else {
+                for (auto i = std::size_t{ 0 }; i < m_size; ++i) {
+                    std::destroy_at(&data()[i]);
+                }
+                m_size = 0;
+            }
         }
 
         [[nodiscard]] constexpr bool operator==(StaticVector const& other) const {
