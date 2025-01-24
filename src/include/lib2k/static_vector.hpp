@@ -4,6 +4,7 @@
 #include <array>
 #include <format>
 #include <memory>
+#include <new>
 #include <stdexcept>
 #include <utility>
 
@@ -116,7 +117,7 @@ namespace c2k {
         }
 
         [[nodiscard]] T const* data() const {
-            return reinterpret_cast<T const*>(m_storage.data.data());
+            return std::launder(reinterpret_cast<T const*>(m_storage.data.data()));
         }
 
         [[nodiscard]] constexpr T* data()
@@ -126,7 +127,7 @@ namespace c2k {
         }
 
         [[nodiscard]] T* data() {
-            return reinterpret_cast<T*>(m_storage.data.data());
+            return std::launder(reinterpret_cast<T*>(m_storage.data.data()));
         }
 
         [[nodiscard]] constexpr auto begin() {
