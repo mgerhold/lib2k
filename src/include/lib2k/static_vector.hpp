@@ -36,22 +36,9 @@ namespace c2k {
             constexpr ~TypedStorage() noexcept = default;
         };
 
-        template<typename Contained>
-        struct Storage;
+        using Storage = std::conditional_t<std::default_initializable<T>, TypedStorage, TypeErasedStorage>;
 
-        template<std::default_initializable Contained>
-        struct Storage<Contained> {
-            using type = TypedStorage;
-        };
-
-        template<detail::NotDefaultInitializable Contained>
-        struct Storage<Contained> {
-            using type = TypeErasedStorage;
-        };
-
-        using StorageType = typename Storage<T>::type;
-
-        StorageType m_storage{};
+        Storage m_storage{};
         std::size_t m_size{ 0 };
 
     public:
