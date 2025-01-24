@@ -1,9 +1,65 @@
+#include <algorithm>
 #include <gtest/gtest.h>
 #include <lib2k/static_vector.hpp>
 #include <numeric>
+#include <ranges>
 #include <string>
 
 using c2k::StaticVector;
+
+struct Pod final {
+    int n;
+    double d;
+    float f;
+
+    [[nodiscard]] constexpr auto operator<=>(Pod const&) const = default;
+};
+
+struct NotDefaultConstructible final {
+    constexpr NotDefaultConstructible() = delete;
+    explicit constexpr NotDefaultConstructible(int) { }
+
+    [[nodiscard]] constexpr auto operator<=>(NotDefaultConstructible const&) const = default;
+};
+
+struct CopyableButNotMovable {
+    constexpr CopyableButNotMovable() = default;
+    constexpr CopyableButNotMovable(CopyableButNotMovable const&) = default;
+    constexpr CopyableButNotMovable& operator=(CopyableButNotMovable const&) = default;
+    CopyableButNotMovable(CopyableButNotMovable&&) = delete;
+    CopyableButNotMovable& operator=(CopyableButNotMovable&&) = delete;
+};
+
+class IntHolder final {
+private:
+    int* m_value;
+
+public:
+    [[nodiscard]] explicit IntHolder(int const value) : m_value{ new int{ value } } { }
+
+    IntHolder(IntHolder const& other) = delete;
+
+    [[nodiscard]] IntHolder(IntHolder&& other) noexcept : m_value{ std::exchange(other.m_value, nullptr) } { }
+
+    IntHolder& operator=(IntHolder const& other) = delete;
+
+    IntHolder& operator=(IntHolder&& other) noexcept {
+        if (this == std::addressof(other)) {
+            return *this;
+        }
+        delete m_value;
+        m_value = std::exchange(other.m_value, nullptr);
+        return *this;
+    }
+
+    ~IntHolder() noexcept {
+        delete m_value;
+    }
+
+    [[nodiscard]] int value() const {
+        return *m_value;
+    }
+};
 
 TEST(StaticVectorTests, DefaultConstruction) {
     static constexpr auto vector = StaticVector<int, 4>{};
@@ -11,6 +67,36 @@ TEST(StaticVectorTests, DefaultConstruction) {
     static_assert(decltype(vector)::capacity() == 4);
     static_assert(vector.size() == 0); // NOLINT (comparing size with zero instead of calling empty)
     static_assert(vector.empty());
+
+    static constexpr auto vector2 = StaticVector<Pod, 4>{};
+    static_assert(vector2.capacity() == 4); // NOLINT (access to static member through instance)
+    static_assert(decltype(vector2)::capacity() == 4);
+    static_assert(vector2.size() == 0); // NOLINT (comparing size with zero instead of calling empty)
+    static_assert(vector2.empty());
+
+    static constexpr auto vector3 = StaticVector<NotDefaultConstructible, 4>{};
+    static_assert(vector3.capacity() == 4); // NOLINT (access to static member through instance)
+    static_assert(decltype(vector3)::capacity() == 4);
+    static_assert(vector3.size() == 0); // NOLINT (comparing size with zero instead of calling empty)
+    static_assert(vector3.empty());
+
+    static constexpr auto vector4 = StaticVector<std::array<NotDefaultConstructible, 2>, 4>{};
+    static_assert(vector4.capacity() == 4); // NOLINT (access to static member through instance)
+    static_assert(decltype(vector4)::capacity() == 4);
+    static_assert(vector4.size() == 0); // NOLINT (comparing size with zero instead of calling empty)
+    static_assert(vector4.empty());
+
+    static constexpr auto vector5 = StaticVector<CopyableButNotMovable, 4>{};
+    static_assert(vector5.capacity() == 4); // NOLINT (access to static member through instance)
+    static_assert(decltype(vector5)::capacity() == 4);
+    static_assert(vector5.size() == 0); // NOLINT (comparing size with zero instead of calling empty)
+    static_assert(vector5.empty());
+
+    static auto constexpr vector6 = StaticVector<std::unique_ptr<int>, 4>{};
+    EXPECT_EQ(vector6.capacity(), 4); // NOLINT (access to static member through instance)
+    EXPECT_EQ(decltype(vector6)::capacity(), 4);
+    EXPECT_EQ(vector6.size(), 0); // NOLINT (comparing size with zero instead of calling empty)
+    EXPECT_TRUE(vector6.empty());
 }
 
 TEST(StaticVectorTests, ConstructionWithInitializerList) {
@@ -27,6 +113,116 @@ TEST(StaticVectorTests, ConstructionWithInitializerList) {
     static_assert(not b.empty());
 
     EXPECT_THROW(std::ignore = (StaticVector<int, 4>{ 1, 2, 3, 4, 5 }), c2k::InsufficientCapacity);
+
+    static constexpr auto c = StaticVector<Pod, 3>{
+        Pod{ 1, 2.0, 3.0f },
+        Pod{ 4, 5.0, 6.0f },
+    };
+    static_assert(c.capacity() == 3); // NOLINT (access to static member through instance)
+    static_assert(decltype(c)::capacity() == 3);
+    static_assert(c.size() == 2);
+    static_assert(not c.empty());
+
+    // Non-default constructible types don't allow the StaticVector to be constexpr.
+    auto const d = StaticVector<NotDefaultConstructible, 4>{
+        NotDefaultConstructible{ 1 },
+        NotDefaultConstructible{ 2 },
+        NotDefaultConstructible{ 3 },
+    };
+    EXPECT_EQ(d.capacity(), 4); // NOLINT (access to static member through instance)
+    EXPECT_EQ(decltype(d)::capacity(), 4);
+    EXPECT_EQ(d.size(), 3);
+    EXPECT_FALSE(d.empty());
+
+    static constexpr auto e = StaticVector<CopyableButNotMovable, 4>{
+        CopyableButNotMovable{},
+        CopyableButNotMovable{},
+    };
+}
+
+TEST(StaticVectorTests, Copying) {
+    static constexpr auto a = StaticVector<int, 4>{ 1, 2, 3, 4 };
+    static constexpr auto b = a;
+    static_assert(a == b);
+    auto c = decltype(a){};
+    c = a;
+    EXPECT_EQ(a, c);
+
+    static constexpr auto d = StaticVector<Pod, 3>{
+        Pod{ 1, 2.0, 3.0f },
+        Pod{ 4, 5.0, 6.0f },
+    };
+    static constexpr auto e = d;
+    static_assert(d == e);
+    auto f = decltype(d){};
+    f = d;
+    EXPECT_EQ(d, f);
+
+    auto const g = StaticVector<NotDefaultConstructible, 4>{
+        NotDefaultConstructible{ 1 },
+        NotDefaultConstructible{ 2 },
+        NotDefaultConstructible{ 3 },
+    };
+    auto h = g;
+    EXPECT_EQ(g, h);
+
+    static constexpr auto i = StaticVector<CopyableButNotMovable, 4>{
+        CopyableButNotMovable{},
+        CopyableButNotMovable{},
+    };
+    static constexpr auto j = i;
+    auto k = decltype(j){};
+    k = j;
+}
+
+TEST(StaticVectorTests, Moving) {
+    static constexpr auto lambda = [] {
+        auto a = StaticVector<std::unique_ptr<int>, 4>{};
+        a.push_back(std::make_unique<int>(1));
+        a.push_back(std::make_unique<int>(2));
+        a.push_back(std::make_unique<int>(3));
+        a.push_back(std::make_unique<int>(4));
+        auto b = std::move(a); // Move constructor.
+        auto range = b | std::views::transform([](auto const& ptr) { return *ptr; });
+        return std::accumulate(range.begin(), range.end(), 0);
+    };
+    static constexpr auto a = lambda();
+    static_assert(a == 10);
+
+    static constexpr auto lambda2 = [] {
+        auto a2 = StaticVector<std::unique_ptr<int>, 4>{};
+        a2.push_back(std::make_unique<int>(1));
+        a2.push_back(std::make_unique<int>(2));
+        a2.push_back(std::make_unique<int>(3));
+        a2.push_back(std::make_unique<int>(4));
+        auto b2 = decltype(a2){};
+        b2 = std::move(a2); // Move assignment.
+        auto range = b2 | std::views::transform([](auto const& ptr) { return *ptr; });
+        return std::accumulate(range.begin(), range.end(), 0);
+    };
+    static constexpr auto b = lambda2();
+    static_assert(b == 10);
+
+    auto c = StaticVector<IntHolder, 4>{};
+    c.push_back(IntHolder{ 1 });
+    c.push_back(IntHolder{ 2 });
+    c.push_back(IntHolder{ 3 });
+    c.push_back(IntHolder{ 4 });
+    auto d = std::move(c);
+    EXPECT_TRUE(c.empty());
+    EXPECT_EQ(d.size(), 4);
+    auto const sum = std::accumulate(d.cbegin(), d.cend(), 0, [](auto const acc, auto const& holder) {
+        return acc + holder.value();
+    });
+    EXPECT_EQ(sum, 10);
+    auto e = decltype(c){};
+    e = std::move(d);
+    EXPECT_TRUE(d.empty());
+    EXPECT_EQ(e.size(), 4);
+    auto const sum2 = std::accumulate(e.cbegin(), e.cend(), 0, [](auto const acc, auto const& holder) {
+        return acc + holder.value();
+    });
+    EXPECT_EQ(sum2, 10);
 }
 
 TEST(StaticVectorTests, Iterating) {
@@ -91,6 +287,27 @@ TEST(StaticVectorTests, PushBack) {
     EXPECT_EQ(vector3.capacity(), 4);
     EXPECT_EQ(vector3.size(), 2);
     EXPECT_FALSE(vector3.empty());
+
+    static constexpr auto lambda = [] {
+        auto a = StaticVector<std::unique_ptr<int>, 4>{};
+        a.push_back(std::make_unique<int>(1));
+        a.push_back(std::make_unique<int>(2));
+        a.push_back(std::make_unique<int>(3));
+        a.push_back(std::make_unique<int>(4));
+        auto range = a | std::views::transform([](auto const& ptr) { return *ptr; });
+        return std::accumulate(range.begin(), range.end(), 0);
+    };
+    static constexpr auto a = lambda();
+    static_assert(a == 10);
+
+    auto b = StaticVector<IntHolder, 10>{};
+    b.emplace_back(1);
+    b.emplace_back(2);
+    b.emplace_back(3);
+    auto const sum = std::accumulate(b.cbegin(), b.cend(), 0, [](auto const acc, auto const& holder) {
+        return acc + holder.value();
+    });
+    EXPECT_EQ(sum, 6);
 }
 
 TEST(StaticVectorTests, PopBack) {

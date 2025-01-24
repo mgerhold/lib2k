@@ -165,7 +165,7 @@ namespace c2k {
 
         [[nodiscard]] Utf8String transform(Invocable<Utf8Char, Utf8Char> auto&& transformer) const {
             auto result = Utf8String{};
-            for (auto const c : *this) {
+            for (auto const& c : *this) {
                 result += transformer(c);
             }
             return result;

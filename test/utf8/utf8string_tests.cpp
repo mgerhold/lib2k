@@ -92,7 +92,7 @@ TEST(Utf8StringTests, Iterating) {
     EXPECT_EQ(utf8_string.calculate_char_count(), 9);
 
     auto stream = std::ostringstream{};
-    for (auto const c : utf8_string) {
+    for (auto const& c : utf8_string) {
         stream << c << '\n';
     }
     EXPECT_EQ(stream.str(), "H\ne\nl\nl\no\n,\n \n🌍\n!\n");
@@ -222,7 +222,7 @@ TEST(Utf8StringTests, Append) {
     EXPECT_EQ(string.calculate_char_count(), 9);
 
     auto result = Utf8String{};
-    for (auto const c : string) {
+    for (auto const& c : string) {
         (result += c) += '\n';
     }
     EXPECT_EQ(result, "H\ne\nl\nl\no\n,\n \n🌍\n!\n");

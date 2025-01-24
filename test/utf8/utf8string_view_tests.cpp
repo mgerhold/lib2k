@@ -86,7 +86,7 @@ TEST(Utf8StringViewTests, Iterating) {
     EXPECT_EQ(utf8_string_view.calculate_char_count(), 9);
 
     auto stream = std::ostringstream{};
-    for (auto const c : utf8_string_view) {
+    for (auto const& c : utf8_string_view) {
         stream << c << '\n';
     }
     EXPECT_EQ(stream.str(), "H\ne\nl\nl\no\n,\n \n🌍\n!\n");
