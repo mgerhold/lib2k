@@ -8,14 +8,41 @@
 #include <memory>
 #include <new>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
-namespace c2k {
+// clang-format off
+#define GENERATE_CONSTEXPR_OVERLOADS(Ret, Name, Params, Body) \
+    constexpr Ret Name(Params)                                \
+        requires std::default_initializable<T>                \
+    Body                                                      \
+    Ret Name(Params)                                          \
+    Body
 
-    namespace detail {
-        template<typename T>
-        concept NotDefaultInitializable = not std::default_initializable<T>;
-    } // namespace detail
+#define GENERATE_CONSTEXPR_NOEXCEPT_OVERLOADS(Ret, Name, Params, Body) \
+    constexpr Ret Name(Params) noexcept                                \
+        requires std::default_initializable<T>                         \
+    Body                                                               \
+    Ret Name(Params) noexcept                                          \
+    Body
+
+#define GENERATE_CONSTEXPR_CONSTRUCTORS(Name, Params, Body) \
+    [[nodiscard]] constexpr Name(Params)                    \
+        requires std::default_initializable<T>              \
+    Body                                                    \
+    [[nodiscard]] Name(Params)                              \
+    Body
+
+#define GENERATE_CONSTEXPR_NOEXCEPT_CONSTRUCTORS(Name, Params, Body) \
+    [[nodiscard]] constexpr Name(Params) noexcept                    \
+        requires std::default_initializable<T>                       \
+    Body                                                             \
+    [[nodiscard]] Name(Params) noexcept                              \
+    Body
+// clang-format on
+
+
+namespace c2k {
 
     class InsufficientCapacity final : public std::runtime_error {
     public:
@@ -35,8 +62,6 @@ namespace c2k {
 
         struct TypedStorage final {
             std::array<T, max_capacity> elements{};
-
-            constexpr ~TypedStorage() noexcept = default;
         };
 
         using Storage = std::conditional_t<std::default_initializable<T>, TypedStorage, TypeErasedStorage>;
@@ -47,31 +72,33 @@ namespace c2k {
     public:
         [[nodiscard]] constexpr StaticVector() = default;
 
-        [[nodiscard]] constexpr StaticVector(std::initializer_list<T> const values) {
+        // Constructors that take an initializer list.
+        GENERATE_CONSTEXPR_CONSTRUCTORS(StaticVector, std::initializer_list<T> const values, {
             if (values.size() > capacity()) {
                 throw InsufficientCapacity{ capacity() };
             }
             for (auto const& value : values) {
                 push_back(value);
             }
-        }
+        });
 
-        [[nodiscard]] constexpr StaticVector(StaticVector const& other) {
+        // Copy constructors.
+        GENERATE_CONSTEXPR_CONSTRUCTORS(StaticVector, StaticVector const& other, {
             for (auto const& value : other) {
                 push_back(value);
             }
-        }
+        });
 
-        [[nodiscard]] constexpr StaticVector(StaticVector&& other) noexcept
-            requires std::movable<T>
-        {
+        // Move constructors.
+        GENERATE_CONSTEXPR_NOEXCEPT_CONSTRUCTORS(StaticVector, StaticVector&& other, {
             for (auto& value : other) {
                 push_back(std::move(value));
             }
             other.clear();
-        }
+        });
 
-        constexpr StaticVector& operator=(StaticVector const& other) {
+        // Copy assignment operators.
+        GENERATE_CONSTEXPR_OVERLOADS(StaticVector&, operator=, StaticVector const& other, {
             if (this == std::addressof(other)) {
                 return *this;
             }
@@ -80,11 +107,10 @@ namespace c2k {
                 push_back(value);
             }
             return *this;
-        }
+        });
 
-        constexpr StaticVector& operator=(StaticVector&& other) noexcept
-            requires std::movable<T>
-        {
+        // Move assignment operators.
+        GENERATE_CONSTEXPR_NOEXCEPT_OVERLOADS(StaticVector&, operator=, StaticVector&& other, {
             if (this == std::addressof(other)) {
                 return *this;
             }
@@ -94,7 +120,7 @@ namespace c2k {
             }
             other.clear();
             return *this;
-        }
+        });
 
         constexpr ~StaticVector() noexcept {
             clear();
@@ -220,31 +246,43 @@ namespace c2k {
             return at(size() - 1);
         }
 
-        constexpr void push_back(T const& value) {
+        GENERATE_CONSTEXPR_OVERLOADS(void, push_back, T const& value, {
             if (m_size >= capacity()) {
                 throw InsufficientCapacity{ capacity() };
             }
-            std::construct_at(&data()[m_size], value);
+            if constexpr (std::default_initializable<T>) {
+                m_storage.elements[m_size] = value;
+            } else {
+                std::construct_at(&data()[m_size], value);
+            }
             ++m_size;
-        }
+        });
 
-        constexpr void push_back(T&& value) {
+        GENERATE_CONSTEXPR_OVERLOADS(void, push_back, T&& value, {
             if (m_size >= capacity()) {
                 throw InsufficientCapacity{ capacity() };
             }
-            std::construct_at(&data()[m_size], std::move(value));
+            if constexpr (std::default_initializable<T>) {
+                m_storage.elements[m_size] = std::move(value);
+            } else {
+                std::construct_at(&data()[m_size], std::move(value));
+            }
             ++m_size;
-        }
+        });
 
-        constexpr void emplace_back(auto&&... args) {
+        GENERATE_CONSTEXPR_OVERLOADS(void, emplace_back, auto&&... args, {
             if (m_size >= capacity()) {
                 throw InsufficientCapacity{ capacity() };
             }
-            std::construct_at(&data()[m_size], std::forward<decltype(args)>(args)...);
+            if constexpr (std::default_initializable<T>) {
+                m_storage.elements[m_size] = T{ std::forward<decltype(args)>(args)... };
+            } else {
+                std::construct_at(&data()[m_size], std::forward<decltype(args)>(args)...);
+            }
             ++m_size;
-        }
+        });
 
-        constexpr T pop_back() {
+        GENERATE_CONSTEXPR_OVERLOADS(T, pop_back, void, {
             if (empty()) {
                 throw std::out_of_range{ "pop_back on empty vector" };
             }
@@ -254,7 +292,7 @@ namespace c2k {
             }
             --m_size;
             return result;
-        }
+        });
 
         constexpr void clear() {
             if constexpr (std::default_initializable<T>) {
@@ -266,7 +304,7 @@ namespace c2k {
                         value = T{};
                     }
                 } else {
-                    static constexpr auto default_value = T{};
+                    auto const default_value = T{};
                     for (auto& value : *this) {
                         value = default_value;
                     }
@@ -293,3 +331,8 @@ namespace c2k {
         }
     };
 } // namespace c2k
+
+#undef GENERATE_CONSTEXPR_OVERLOADS
+#undef GENERATE_CONSTEXPR_NOEXCEPT_OVERLOADS
+#undef GENERATE_CONSTEXPR_CONSTRUCTORS
+#undef GENERATE_CONSTEXPR_NOEXCEPT_CONSTRUCTORS

@@ -287,6 +287,27 @@ TEST(StaticVectorTests, PushBack) {
     EXPECT_EQ(vector3.capacity(), 4);
     EXPECT_EQ(vector3.size(), 2);
     EXPECT_FALSE(vector3.empty());
+
+    static constexpr auto lambda = [] {
+        auto a = StaticVector<std::unique_ptr<int>, 4>{};
+        a.push_back(std::make_unique<int>(1));
+        a.push_back(std::make_unique<int>(2));
+        a.push_back(std::make_unique<int>(3));
+        a.push_back(std::make_unique<int>(4));
+        auto range = a | std::views::transform([](auto const& ptr) { return *ptr; });
+        return std::accumulate(range.begin(), range.end(), 0);
+    };
+    static constexpr auto a = lambda();
+    static_assert(a == 10);
+
+    auto b = StaticVector<IntHolder, 10>{};
+    b.emplace_back(1);
+    b.emplace_back(2);
+    b.emplace_back(3);
+    auto const sum = std::accumulate(b.cbegin(), b.cend(), 0, [](auto const acc, auto const& holder) {
+        return acc + holder.value();
+    });
+    EXPECT_EQ(sum, 6);
 }
 
 TEST(StaticVectorTests, PopBack) {
