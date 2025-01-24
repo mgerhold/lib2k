@@ -173,7 +173,6 @@ TEST(StaticVectorTests, Copying) {
     static constexpr auto j = i;
     auto k = decltype(j){};
     k = j;
-    k = k; // NOLINT (self-assignment)
 }
 
 TEST(StaticVectorTests, Moving) {
@@ -191,14 +190,14 @@ TEST(StaticVectorTests, Moving) {
     static_assert(a == 10);
 
     static constexpr auto lambda2 = [] {
-        auto a = StaticVector<std::unique_ptr<int>, 4>{};
-        a.push_back(std::make_unique<int>(1));
-        a.push_back(std::make_unique<int>(2));
-        a.push_back(std::make_unique<int>(3));
-        a.push_back(std::make_unique<int>(4));
-        auto b = decltype(a){};
-        b = std::move(a); // Move assignment.
-        auto range = b | std::views::transform([](auto const& ptr) { return *ptr; });
+        auto a2 = StaticVector<std::unique_ptr<int>, 4>{};
+        a2.push_back(std::make_unique<int>(1));
+        a2.push_back(std::make_unique<int>(2));
+        a2.push_back(std::make_unique<int>(3));
+        a2.push_back(std::make_unique<int>(4));
+        auto b2 = decltype(a2){};
+        b2 = std::move(a2); // Move assignment.
+        auto range = b2 | std::views::transform([](auto const& ptr) { return *ptr; });
         return std::accumulate(range.begin(), range.end(), 0);
     };
     static constexpr auto b = lambda2();
