@@ -247,7 +247,9 @@ namespace c2k {
                 throw std::out_of_range{ "pop_back on empty vector" };
             }
             auto result = std::move(back());
-            std::destroy_at(&data()[m_size - 1]);
+            if constexpr (not std::default_initializable<T>) {
+                std::destroy_at(&data()[m_size - 1]);
+            }
             --m_size;
             return result;
         }
