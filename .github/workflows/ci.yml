@@ -20,6 +20,7 @@ jobs:
               sudo apt update
               sudo apt install -y g++-13
             build-type: Debug
+            extra-cmake-flags: -Dlib2k_enable_undefined_behavior_sanitizer:BOOL=OFF
           - compiler-name: GCC 13
             cc: gcc-13
             cxx: g++-13
@@ -28,6 +29,7 @@ jobs:
               sudo apt update
               sudo apt install -y g++-13
             build-type: Release
+            extra-cmake-flags: -Dlib2k_enable_undefined_behavior_sanitizer:BOOL=OFF
           - compiler-name: Clang 18
             cc: clang-18
             cxx: clang++-18
@@ -37,6 +39,7 @@ jobs:
               sudo ./llvm.sh 18
               sudo apt install libstdc++-13-dev
             build-type: Debug
+            extra-cmake-flags: ""
           - compiler-name: Clang 18
             cc: clang-18
             cxx: clang++-18
@@ -46,6 +49,7 @@ jobs:
               sudo ./llvm.sh 18
               sudo apt install libstdc++-13-dev
             build-type: Release
+            extra-cmake-flags: ""
 
     steps:
       - uses: actions/checkout@v3
@@ -56,7 +60,9 @@ jobs:
         run: |
           sudo update-alternatives --install /usr/bin/cc cc /usr/bin/${{ matrix.cc }} 100
           sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/${{ matrix.cxx }} 100
-          cmake -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
+          cmake -B build -G "Unix Makefiles" \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+            ${{ matrix.extra-cmake-flags }}
       - name: Fix kernel mmap rnd bits
         # Asan in llvm 14 provided in ubuntu 22.04 is incompatible with
         # high-entropy ASLR in much newer kernels that GitHub runners are
