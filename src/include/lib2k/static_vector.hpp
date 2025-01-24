@@ -258,6 +258,19 @@ namespace c2k {
 
         constexpr void clear() {
             if constexpr (std::default_initializable<T>) {
+                // Overwrite existing objects with default-constructed objects.
+                // This may be reasonable for types like std::string so that their
+                // memory gets deallocated here instead of in the destructor.
+                if constexpr (std::movable<T>) {
+                    for (auto& value : *this) {
+                        value = T{};
+                    }
+                } else {
+                    static constexpr auto default_value = T{};
+                    for (auto& value : *this) {
+                        value = default_value;
+                    }
+                }
                 m_size = 0;
             } else {
                 for (auto i = std::size_t{ 0 }; i < m_size; ++i) {
