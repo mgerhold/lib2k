@@ -126,7 +126,7 @@ namespace c2k {
             return result;
         }
 
-        [[nodiscard]] std::vector<Utf8StringView> split(Utf8StringView delimiter);
+        [[nodiscard]] std::vector<Utf8StringView> split(Utf8StringView delimiter) const;
 
         // clang-format off
         [[nodiscard]] Utf8String replace(

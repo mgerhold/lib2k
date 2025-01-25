@@ -169,7 +169,7 @@ namespace c2k {
         return find(needle, cbegin() + start_position);
     }
 
-    [[nodiscard]] std::vector<Utf8StringView> Utf8StringView::split(Utf8StringView const delimiter) {
+    [[nodiscard]] std::vector<Utf8StringView> Utf8StringView::split(Utf8StringView const delimiter) const {
         if (delimiter.is_empty()) {
             throw std::invalid_argument{ "cannot split string with empty delimiter" };
         }
