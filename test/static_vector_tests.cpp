@@ -345,3 +345,39 @@ TEST(StaticVectorTests, EmplaceBack) {
     EXPECT_EQ(vector.size(), 1);
     EXPECT_FALSE(vector.empty());
 }
+
+TEST(StaticVectorTests, At) {
+    static constexpr auto lambda = [] {
+        auto a = StaticVector<std::unique_ptr<int>, 4>{};
+        a.push_back(std::make_unique<int>(42));
+        return *a.at(0);
+    };
+    static_assert(lambda() == 42);
+
+    auto a = StaticVector<IntHolder, 4>{};
+    a.emplace_back(42);
+    EXPECT_EQ(a.at(0).value(), 42);
+}
+
+TEST(StaticVectorTests, Comparisons) {
+    static constexpr auto a = StaticVector<int, 4>{ 1, 2, 3, 4 };
+    static constexpr auto b = StaticVector<int, 4>{ 1, 2, 3, 4 };
+    static_assert(a == b);
+    static_assert(not(a != b)); // NOLINT (expression can be simplified)
+    static constexpr auto c = StaticVector<int, 4>{ 1, 2, 3, 2 };
+    static_assert(a != c);
+    static_assert(a > c);
+    static_assert(a >= c);
+    static_assert(c < a);
+    static_assert(c <= a);
+
+    struct Test {
+        int n;
+
+        bool operator==(Test const& other) const = default;
+    };
+
+    static constexpr auto d = StaticVector<Test, 4>{ Test{ 1 }, Test{ 2 }, Test{ 3 }, Test{ 4 } };
+    static constexpr auto e = StaticVector<Test, 4>{ Test{ 1 }, Test{ 2 }, Test{ 3 }, Test{ 4 } };
+    static_assert(d == e);
+}
