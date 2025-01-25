@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <compare>
 #include <concepts>
 #include <format>
 #include <initializer_list>
@@ -318,16 +319,19 @@ namespace c2k {
             }
         }
 
-        [[nodiscard]] constexpr bool operator==(StaticVector const& other) const {
+        [[nodiscard]] constexpr auto operator<=>(StaticVector const& other) const
+            requires std::three_way_comparable<T>
+        {
+            return std::lexicographical_compare_three_way(cbegin(), cend(), other.cbegin(), other.cend());
+        }
+
+        [[nodiscard]] constexpr auto operator==(StaticVector const& other) const
+            requires std::equality_comparable<T>
+        {
             if (size() != other.size()) {
                 return false;
             }
-            for (auto i = std::size_t{ 0 }; i < size(); ++i) {
-                if (at(i) != other.at(i)) {
-                    return false;
-                }
-            }
-            return true;
+            return std::equal(cbegin(), cend(), other.cbegin());
         }
     };
 } // namespace c2k
