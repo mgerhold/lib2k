@@ -72,7 +72,7 @@ namespace c2k::detail {
             ++num_bytes;
         } while (is_continuation_byte(*pointer));
         m_next_char_start = reinterpret_cast<std::byte const*>(pointer);
-        m_next_char_num_bytes = num_bytes;
+        m_next_char_num_bytes = static_cast<std::uint8_t>(num_bytes);
         auto codepoint = Utf8Char::Codepoint{};
         for (auto i = std::size_t{ 0 }; i < num_bytes; ++i) {
             codepoint.push_back(*(m_next_char_start + i));
