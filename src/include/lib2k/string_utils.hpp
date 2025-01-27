@@ -4,6 +4,7 @@
 #include <cctype>
 #include <charconv>
 #include <concepts>
+#include <cstdint>
 #include <limits>
 #include <optional>
 #include <stdexcept>
@@ -19,6 +20,100 @@ namespace c2k {
 
     template<typename T>
     concept StringIterable = std::convertible_to<decltype(*std::cbegin(std::declval<T>())), std::string>;
+
+    void left_trim(std::string_view& s, Predicate<bool, char> auto&& predicate) {
+        auto const it = std::find_if(std::cbegin(s), std::cend(s), [&](auto const c) { return not predicate(c); });
+        s.remove_prefix(static_cast<std::size_t>(std::distance(std::cbegin(s), it)));
+    }
+
+    inline void left_trim(std::string_view& s) {
+        left_trim(s, [](char const c) { return static_cast<bool>(std::isspace(static_cast<unsigned char>(c))); });
+    }
+
+    inline void left_trim(std::string_view& s, std::string_view const characters_to_erase) {
+        left_trim(s, [characters_to_erase](char const c) {
+            return characters_to_erase.find(c) != std::string_view::npos;
+        });
+    }
+
+    [[nodiscard]] std::string_view left_trimmed(std::string_view s, Predicate<bool, char> auto&& predicate) {
+        left_trim(s, std::forward<decltype(predicate)>(predicate));
+        return s;
+    }
+
+    [[nodiscard]] inline std::string_view left_trimmed(std::string_view const s) {
+        return left_trimmed(s, [](char const c) {
+            return static_cast<bool>(std::isspace(static_cast<unsigned char>(c)));
+        });
+    }
+
+    [[nodiscard]] inline std::string_view
+    left_trimmed(std::string_view const s, std::string_view const characters_to_erase) {
+        return left_trimmed(s, [characters_to_erase](char const c) {
+            return characters_to_erase.find(c) != std::string_view::npos;
+        });
+    }
+
+    void right_trim(std::string_view& s, Predicate<bool, char> auto&& predicate) {
+        auto const rit = std::find_if(s.crbegin(), s.crend(), [&](auto const c) { return not predicate(c); });
+        s.remove_suffix(static_cast<std::size_t>(std::distance(s.crbegin(), rit)));
+    }
+
+    inline void right_trim(std::string_view& s) {
+        right_trim(s, [](char const c) { return static_cast<bool>(std::isspace(static_cast<unsigned char>(c))); });
+    }
+
+    inline void right_trim(std::string_view& s, std::string_view const characters_to_erase) {
+        right_trim(s, [characters_to_erase](char const c) {
+            return characters_to_erase.find(c) != std::string_view::npos;
+        });
+    }
+
+    [[nodiscard]] std::string_view right_trimmed(std::string_view s, Predicate<bool, char> auto&& predicate) {
+        right_trim(s, std::forward<decltype(predicate)>(predicate));
+        return s;
+    }
+
+    [[nodiscard]] inline std::string_view right_trimmed(std::string_view const s) {
+        return right_trimmed(s, [](char const c) {
+            return static_cast<bool>(std::isspace(static_cast<unsigned char>(c)));
+        });
+    }
+
+    [[nodiscard]] inline std::string_view
+    right_trimmed(std::string_view const s, std::string_view const characters_to_erase) {
+        return right_trimmed(s, [characters_to_erase](char const c) {
+            return characters_to_erase.find(c) != std::string_view::npos;
+        });
+    }
+
+    void trim(std::string_view& s, Predicate<bool, char> auto&& predicate) {
+        left_trim(s, std::forward<decltype(predicate)>(predicate));
+        right_trim(s, std::forward<decltype(predicate)>(predicate));
+    }
+
+    inline void trim(std::string_view& s) {
+        trim(s, [](char const c) { return static_cast<bool>(std::isspace(static_cast<unsigned char>(c))); });
+    }
+
+    inline void trim(std::string_view& s, std::string_view const characters_to_erase) {
+        trim(s, [characters_to_erase](char const c) { return characters_to_erase.find(c) != std::string_view::npos; });
+    }
+
+    [[nodiscard]] std::string_view trimmed(std::string_view s, Predicate<bool, char> auto&& predicate) {
+        trim(s, std::forward<decltype(predicate)>(predicate));
+        return s;
+    }
+
+    [[nodiscard]] inline std::string_view trimmed(std::string_view s) {
+        trim(s);
+        return s;
+    }
+
+    [[nodiscard]] inline std::string_view trimmed(std::string_view s, std::string_view const characters_to_erase) {
+        trim(s, characters_to_erase);
+        return s;
+    }
 
     void left_trim(std::string& s, Predicate<bool, char> auto&& predicate) {
         auto const it = std::find_if(std::cbegin(s), std::cend(s), [&](auto const c) { return not predicate(c); });
@@ -120,6 +215,60 @@ namespace c2k {
         return trimmed(std::move(s), [characters_to_erase](char const c) {
             return characters_to_erase.find(c) != std::string_view::npos;
         });
+    }
+
+    [[nodiscard]] std::string left_trimmed(char const* const s, Predicate<bool, char> auto&& predicate) {
+        auto result = std::string{ s };
+        left_trim(result, std::forward<decltype(predicate)>(predicate));
+        return result;
+    }
+
+    [[nodiscard]] inline std::string left_trimmed(char const* const s) {
+        auto result = std::string{ s };
+        left_trim(result);
+        return result;
+    }
+
+    [[nodiscard]] inline std::string left_trimmed(char const* const s, std::string_view const characters_to_erase) {
+        auto result = std::string{ s };
+        left_trim(result, characters_to_erase);
+        return result;
+    }
+
+    [[nodiscard]] std::string right_trimmed(char const* const s, Predicate<bool, char> auto&& predicate) {
+        auto result = std::string{ s };
+        right_trim(result, std::forward<decltype(predicate)>(predicate));
+        return result;
+    }
+
+    [[nodiscard]] inline std::string right_trimmed(char const* const s) {
+        auto result = std::string{ s };
+        right_trim(result);
+        return result;
+    }
+
+    [[nodiscard]] inline std::string right_trimmed(char const* const s, std::string_view const characters_to_erase) {
+        auto result = std::string{ s };
+        right_trim(result, characters_to_erase);
+        return result;
+    }
+
+    [[nodiscard]] std::string trimmed(char const* const s, Predicate<bool, char> auto&& predicate) {
+        auto result = std::string{ s };
+        trim(result, std::forward<decltype(predicate)>(predicate));
+        return result;
+    }
+
+    [[nodiscard]] inline std::string trimmed(char const* const s) {
+        auto result = std::string{ s };
+        trim(result);
+        return result;
+    }
+
+    [[nodiscard]] inline std::string trimmed(char const* const s, std::string_view const characters_to_erase) {
+        auto result = std::string{ s };
+        trim(result, characters_to_erase);
+        return result;
     }
 
     [[nodiscard]] std::vector<std::string> split(std::string const& s, std::string_view delimiter);
