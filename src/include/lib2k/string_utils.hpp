@@ -315,8 +315,8 @@ namespace c2k {
         return result;
     }
 
-    enum class StartPosition : std::string::size_type {};
-    enum class MaxReplacementCount : std::string::size_type {};
+    enum class StartPosition : std::string::size_type { };
+    enum class MaxReplacementCount : std::string::size_type { };
 
     // clang-format off
     [[nodiscard]] std::string replace(
