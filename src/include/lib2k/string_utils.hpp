@@ -415,6 +415,18 @@ namespace c2k {
         return result;
     }
 
+    template<>
+    [[nodiscard]] constexpr std::optional<bool> parse(std::string_view const s, int const base) {
+        if (base < 2 or base > 36) {
+            return std::nullopt;
+        }
+        auto const integral_representation = parse<std::intmax_t>(s, base);
+        if (not integral_representation.has_value()) {
+            return std::nullopt;
+        }
+        return integral_representation != 0;
+    }
+
     template<std::floating_point T>
     [[nodiscard]] constexpr std::optional<T> parse(std::string_view const s) {
         auto result = T{};

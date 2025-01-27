@@ -651,4 +651,15 @@ TEST(StringUtilsTests, Parse) {
 
     EXPECT_FALSE(parse<int>("4two").has_value());
     EXPECT_FALSE(parse<double>("3.14xyz").has_value());
+
+    EXPECT_TRUE(parse<bool>("1").value());
+    EXPECT_FALSE(parse<bool>("0").value());
+    EXPECT_TRUE(parse<bool>("2").value());
+    EXPECT_FALSE(parse<bool>("2", 2).has_value());
+    EXPECT_TRUE(parse<bool>("40").value());
+    EXPECT_TRUE(parse<bool>("Z", 36).value());
+    EXPECT_FALSE(parse<bool>("Z", 35).has_value());
+    EXPECT_TRUE(parse<bool>("-31").value());
+    EXPECT_TRUE(parse<bool>("-B1F1", 16).value());
+    EXPECT_FALSE(parse<bool>("99999999999999999999999999999999").has_value());
 }
