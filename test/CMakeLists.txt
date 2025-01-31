@@ -22,12 +22,14 @@ add_test_executable(static_vector_tests)
 add_test_executable(static_string_tests)
 add_test_executable(defer_tests)
 add_test_executable(pinned_tests)
+add_test_executable(overloaded_tests)
 
 add_executable(utf8_tests
         utf8/utf8char_tests.cpp
         utf8/utf8string_tests.cpp
         utf8/utf8string_view_tests.cpp
         utf8/utf8iterator_tests.cpp
+        overloaded_tests.cpp
 )
 
 target_link_libraries(utf8_tests PRIVATE lib2k lib2k_options)
