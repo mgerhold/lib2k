@@ -38,6 +38,10 @@ namespace c2k {
             return m_view.empty();
         }
 
+        [[nodiscard]] constexpr bool is_not_empty() const {
+            return not is_empty();
+        }
+
         [[nodiscard]] std::string_view view() const {
             return m_view;
         }

@@ -131,6 +131,14 @@ namespace c2k {
             return size() == 0;
         }
 
+        [[nodiscard]] constexpr bool is_empty() const {
+            return empty();
+        }
+
+        [[nodiscard]] constexpr bool is_not_empty() const {
+            return not is_empty();
+        }
+
         [[nodiscard]] constexpr std::size_t size() const {
             return m_size;
         }
