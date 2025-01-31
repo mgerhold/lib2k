@@ -1,4 +1,5 @@
-add_library(lib2k)
+add_library(lib2k
+        include/lib2k/overloaded.hpp)
 
 target_sources(lib2k
         PRIVATE
