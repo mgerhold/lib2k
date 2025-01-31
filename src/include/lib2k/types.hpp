@@ -1,7 +1,10 @@
 #pragma once
 
-#include <cstdlib>
 #include <cstdint>
+#include <cstdlib>
+
+// The following type aliases are deliberately not contained in a namespace
+// to make their usage more convenient.
 
 using u8 = std::uint8_t;
 using u16 = std::uint16_t;
