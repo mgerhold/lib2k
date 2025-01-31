@@ -15,3 +15,10 @@ using i16 = std::int16_t;
 using i32 = std::int32_t;
 using i64 = std::int64_t;
 using usize = std::size_t;
+
+// TODO: Replace with std::float32_t and std::float64_t as soon as
+//       all compilers support them.
+using f32 = float;
+static_assert(sizeof(f32) == 4, "f32 is not 4 bytes");
+using f64 = double;
+static_assert(sizeof(f64) == 8, "f64 is not 8 bytes");
