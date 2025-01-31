@@ -145,6 +145,10 @@ namespace c2k {
             return m_data.empty();
         }
 
+        [[nodiscard]] bool is_not_empty() const {
+            return not is_empty();
+        }
+
         void clear() {
             m_data.clear();
         }

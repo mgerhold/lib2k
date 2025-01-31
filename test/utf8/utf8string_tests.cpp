@@ -80,12 +80,14 @@ TEST(Utf8StringTests, Iterating) {
     ++iterator;
     EXPECT_EQ(
             *iterator,
-            Utf8Char::from_bytes(std::array{
-                    std::byte{ static_cast<unsigned char>('\xf0') },
-                    std::byte{ static_cast<unsigned char>('\x9f') },
-                    std::byte{ static_cast<unsigned char>('\x8c') },
-                    std::byte{ static_cast<unsigned char>('\x8d') },
-            }) // == 🌍
+            Utf8Char::from_bytes(
+                    std::array{
+                            std::byte{ static_cast<unsigned char>('\xf0') },
+                            std::byte{ static_cast<unsigned char>('\x9f') },
+                            std::byte{ static_cast<unsigned char>('\x8c') },
+                            std::byte{ static_cast<unsigned char>('\x8d') },
+                    }
+            ) // == 🌍
     );
     ++iterator;
     EXPECT_EQ(*iterator, '!'_utf8);
@@ -113,12 +115,14 @@ TEST(Utf8StringTests, IteratingBackwards) {
     --iterator;
     EXPECT_EQ(
             *iterator,
-            Utf8Char::from_bytes(std::array{
-                    std::byte{ static_cast<unsigned char>('\xf0') },
-                    std::byte{ static_cast<unsigned char>('\x9f') },
-                    std::byte{ static_cast<unsigned char>('\x8c') },
-                    std::byte{ static_cast<unsigned char>('\x8d') },
-            }) // == 🌍
+            Utf8Char::from_bytes(
+                    std::array{
+                            std::byte{ static_cast<unsigned char>('\xf0') },
+                            std::byte{ static_cast<unsigned char>('\x9f') },
+                            std::byte{ static_cast<unsigned char>('\x8c') },
+                            std::byte{ static_cast<unsigned char>('\x8d') },
+                    }
+            ) // == 🌍
     );
     --iterator;
     EXPECT_EQ(*iterator, ' '_utf8);
@@ -142,12 +146,14 @@ TEST(Utf8StringTests, IteratingBackwards) {
     ++reverse_iterator;
     EXPECT_EQ(
             *reverse_iterator,
-            Utf8Char::from_bytes(std::array{
-                    std::byte{ static_cast<unsigned char>('\xf0') },
-                    std::byte{ static_cast<unsigned char>('\x9f') },
-                    std::byte{ static_cast<unsigned char>('\x8c') },
-                    std::byte{ static_cast<unsigned char>('\x8d') },
-            }) // == 🌍
+            Utf8Char::from_bytes(
+                    std::array{
+                            std::byte{ static_cast<unsigned char>('\xf0') },
+                            std::byte{ static_cast<unsigned char>('\x9f') },
+                            std::byte{ static_cast<unsigned char>('\x8c') },
+                            std::byte{ static_cast<unsigned char>('\x8d') },
+                    }
+            ) // == 🌍
     );
     EXPECT_NE(reverse_iterator, utf8_string.crend());
     ++reverse_iterator;
@@ -232,6 +238,11 @@ TEST(Utf8StringTests, Append) {
 TEST(Utf8StringTests, IsEmpty) {
     EXPECT_TRUE(""_utf8.is_empty());
     EXPECT_FALSE("!"_utf8.is_empty());
+}
+
+TEST(Utf8StringTests, IsNotEmpty) {
+    EXPECT_FALSE(""_utf8.is_not_empty());
+    EXPECT_TRUE("!"_utf8.is_not_empty());
 }
 
 TEST(Utf8StringTests, Clear) {

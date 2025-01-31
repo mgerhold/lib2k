@@ -195,6 +195,11 @@ TEST(Utf8StringViewTests, IsEmpty) {
     EXPECT_FALSE("!"_utf8view.is_empty());
 }
 
+TEST(Utf8StringViewTests, IsNotEmpty) {
+    EXPECT_FALSE(""_utf8view.is_not_empty());
+    EXPECT_TRUE("!"_utf8view.is_not_empty());
+}
+
 TEST(Utf8StringViewTests, Substring) {
     auto const string = "The quick brown 🦊 jumps over the lazy 🐶."_utf8view;
     auto sub = string.substring(
