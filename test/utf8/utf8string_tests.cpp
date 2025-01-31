@@ -234,6 +234,11 @@ TEST(Utf8StringTests, IsEmpty) {
     EXPECT_FALSE("!"_utf8.is_empty());
 }
 
+TEST(Utf8StringTests, IsNotEmpty) {
+    EXPECT_FALSE(""_utf8.is_not_empty());
+    EXPECT_TRUE("!"_utf8.is_not_empty());
+}
+
 TEST(Utf8StringTests, Clear) {
     auto string = "test"_utf8;
     string.clear();

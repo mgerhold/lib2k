@@ -104,13 +104,13 @@ TEST(StaticVectorTests, ConstructionWithInitializerList) {
     static_assert(a.capacity() == 4); // NOLINT (access to static member through instance)
     static_assert(decltype(a)::capacity() == 4);
     static_assert(a.size() == 4);
-    static_assert(not a.empty());
+    static_assert(a.is_not_empty());
 
     static constexpr auto b = StaticVector<int, 4>{ 1, 2 };
     static_assert(b.capacity() == 4); // NOLINT (access to static member through instance)
     static_assert(decltype(b)::capacity() == 4);
     static_assert(b.size() == 2);
-    static_assert(not b.empty());
+    static_assert(b.is_not_empty());
 
     EXPECT_THROW(std::ignore = (StaticVector<int, 4>{ 1, 2, 3, 4, 5 }), c2k::InsufficientCapacity);
 
@@ -121,7 +121,7 @@ TEST(StaticVectorTests, ConstructionWithInitializerList) {
     static_assert(c.capacity() == 3); // NOLINT (access to static member through instance)
     static_assert(decltype(c)::capacity() == 3);
     static_assert(c.size() == 2);
-    static_assert(not c.empty());
+    static_assert(c.is_not_empty());
 
     // Non-default constructible types don't allow the StaticVector to be constexpr.
     auto const d = StaticVector<NotDefaultConstructible, 4>{
@@ -132,7 +132,7 @@ TEST(StaticVectorTests, ConstructionWithInitializerList) {
     EXPECT_EQ(d.capacity(), 4); // NOLINT (access to static member through instance)
     EXPECT_EQ(decltype(d)::capacity(), 4);
     EXPECT_EQ(d.size(), 3);
-    EXPECT_FALSE(d.empty());
+    EXPECT_TRUE(d.is_not_empty());
 
     static constexpr auto e = StaticVector<CopyableButNotMovable, 4>{
         CopyableButNotMovable{},
@@ -286,7 +286,7 @@ TEST(StaticVectorTests, PushBack) {
     EXPECT_EQ(vector3.at(1), 10);
     EXPECT_EQ(vector3.capacity(), 4);
     EXPECT_EQ(vector3.size(), 2);
-    EXPECT_FALSE(vector3.empty());
+    EXPECT_TRUE(vector3.is_not_empty());
 
     static constexpr auto lambda = [] {
         auto a = StaticVector<std::unique_ptr<int>, 4>{};
@@ -343,7 +343,7 @@ TEST(StaticVectorTests, EmplaceBack) {
     EXPECT_EQ(vector.at(0).name, "Bjarne");
     EXPECT_EQ(vector.at(0).age, 73);
     EXPECT_EQ(vector.size(), 1);
-    EXPECT_FALSE(vector.empty());
+    EXPECT_TRUE(vector.is_not_empty());
 }
 
 TEST(StaticVectorTests, At) {
